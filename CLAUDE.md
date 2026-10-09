@@ -1,20 +1,32 @@
 # CLAUDE.md
 
 @AGENTS.md
+@apps/web/AGENTS.md
 
 ## 프로젝트 개요
 
-- Next.js 16.4 (App Router, Turbopack, Cache Components) + React 19 + TypeScript 5
-- Tailwind CSS 4 (`@import "tailwindcss"` 방식, `src/app/globals.css`에서 `@theme`으로 토큰 정의)
-- 패키지 매니저: yarn (1.22)
-- 소스는 `src/app/`, 경로 별칭은 `@/*` → `src/*`
-- 2026-10-09에 기존 Next 13 Pages Router 보일러플레이트를 지우고 `create-next-app@latest`로 새로 생성함
+- pnpm 워크스페이스 + Turborepo 모노레포
+  - `apps/web`: Next.js 16.4 (App Router, Turbopack, Cache Components) + React 19 + Tailwind CSS 4
+  - `packages/engine`: 계산 엔진. **순수 함수만** — 런타임 의존성 0개, tsconfig에 DOM·Node 타입 없음, ESLint로 `new Date()`·`Date.now`·`Math.random`·룰셋 값 import 금지. 기준일·룰셋은 인자로 받는다
+  - `packages/rules`: 세제 룰셋 스키마·데이터. 엔진은 여기서 **타입만** import한다
+- 워크스페이스 패키지는 TS 원본을 `exports`로 내보내고 web의 `transpilePackages`로 트랜스파일한다 (별도 빌드 단계 없음)
+- TypeScript 공통 설정은 `tsconfig.base.json` (`strict`, `noUncheckedIndexedAccess`)
+- Tailwind 4는 CSS 우선 설정이라 `tailwind.config.js`가 없다. 토큰은 `apps/web/src/app/globals.css`의 `@theme`에 정의
+- web 경로 별칭: `@/*` → `apps/web/src/*`
 
 ```bash
-yarn dev      # 개발 서버
-yarn build    # 프로덕션 빌드
-yarn lint     # ESLint (.claude/** 는 제외됨)
+pnpm dev          # apps/web 개발 서버
+pnpm typecheck    # 전체 (web은 next typegen 후 tsc)
+pnpm lint
+pnpm test         # Vitest (engine, rules)
+pnpm build
+pnpm --filter @lifecurve/engine test   # 패키지 하나만
 ```
+
+- 의존성 설치 스크립트는 pnpm이 기본 차단한다. 허용·차단 목록은 `pnpm-workspace.yaml`의 `allowBuilds`
+- CI: `.github/workflows/ci.yml` — main 대상 PR과 main push에서 typecheck·lint·test·build
+
+**Next.js 16은 기존 지식과 다른 점이 많다.** 코드를 쓰기 전에 `apps/web/node_modules/next/dist/docs/`의 관련 문서를 먼저 읽는다.
 
 ## 브랜치 전략 (Trunk-based)
 
@@ -38,8 +50,6 @@ fix: Fix message           # 기능 수정 (고침)
 - 기획서: `docs/lifecurve/prd-v1.0.md` — 엔진 알고리즘은 §10, 요율은 §11이 기준
 - 검토 메모·결정 대기 항목: `docs/lifecurve/review.md`
 - 진행 현황(단일 출처): `docs/lifecurve/plan.md` — 스토리를 끝내면 상태를 바로 갱신한다
-
-**Next.js 16은 기존 지식과 다른 점이 많다.** 코드를 쓰기 전에 `node_modules/next/dist/docs/`의 관련 문서를 먼저 읽는다 (`yarn install` 후 존재).
 
 ## 설치된 Skills (웹페이지 제작용)
 
@@ -93,10 +103,9 @@ npx skills add wshobson/agents --skill tailwind-design-system $A
 
 - `impeccable`: 처음 한 번 `/impeccable init`으로 제품/디자인 방향 컨텍스트를 만들고, 필요하면 `/impeccable hooks on`으로 자동 디자인 체크를 켠다.
 - `agent-browser`: 스킬은 얇은 안내 문서이고, 실제 동작은 `agent-browser` CLI가 필요하다 (CLI는 아직 미설치). 상세 지침은 `agent-browser skills get core`, 목록은 `agent-browser skills list`.
-- 이 프로젝트는 **Tailwind v4**(CSS 우선 설정, `tailwind.config.js` 없음)다. 토큰은 `globals.css`의 `@theme`에 정의한다.
 - 같은 이름의 스킬이 사용자 전역 플러그인(`anthropic-skills:*`)에도 있다. 프로젝트 쪽이 우선이니 중복 시 하나를 정리한다.
 - 스킬 업데이트: `npx skills update`, 목록: `npx skills list`, 제거: `npx skills remove <name>`.
-- `.claude/skills/` 안의 번들 JS가 린트에 걸리지 않도록 `eslint.config.mjs`에서 `.claude/**`를 제외했다.
+- ESLint는 각 패키지 디렉터리 기준으로 돌기 때문에 루트 `.claude/skills/`의 번들 JS는 린트 대상이 아니다.
 
 ## 스킬 설치 규칙
 

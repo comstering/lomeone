@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // DOM·Node 타입을 넣지 않는다. fetch·window·localStorage·process를 쓰면 타입 에러가 난다.
+    "lib": ["ES2023"],
+    "types": []
+  },
+  "include": ["src"]
+}
