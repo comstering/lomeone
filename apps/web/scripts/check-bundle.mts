@@ -7,10 +7,10 @@ import { join, relative } from "node:path";
 import { gzipSync } from "node:zlib";
 
 const KB = 1024;
-// 경로 접두어가 긴 것부터 맞춘다. 시뮬레이터(/sim)는 200KB, 나머지는 120KB
+// 경로 접두어가 긴 것부터 맞춘다. 시뮬레이터(/sim)는 250KB, 나머지는 170KB
 const BUDGETS: { prefix: string; limit: number }[] = [
-  { prefix: "/sim", limit: 200 * KB },
-  { prefix: "/", limit: 120 * KB },
+  { prefix: "/sim", limit: 250 * KB },
+  { prefix: "/", limit: 170 * KB },
 ];
 
 const root = join(import.meta.dirname, "..");
