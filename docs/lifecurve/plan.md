@@ -8,8 +8,8 @@
 ## 현재 상태 (2026-10-09)
 
 - Phase 0(착수 준비) 진행 중
-- 레포: Next 16.4 + React 19 + Tailwind 4 스캐폴드만 있음 (`src/app`), 미커밋
-- 블로커: B-1 레포 구조, A-1 도메인, A-2 계정
+- 레포: pnpm 모노레포 + Turborepo 구성 완료 (`feat/monorepo-setup` 브랜치). `apps/web`은 아직 스캐폴드 화면
+- 블로커: A-1 도메인, A-2 계정 (Vercel·Plausible)
 
 ---
 
@@ -18,7 +18,7 @@
 | 항목 | 상태 | 비고 |
 | --- | --- | --- |
 | PRD 분석, 검토 메모 작성 | ✅ | [review.md](./review.md) |
-| 레포 구조 결정 (B-1) | ⏸ | pnpm 모노레포 vs yarn 단일 앱 |
+| 레포 구조 결정 (B-1) | ✅ | pnpm 모노레포 + Turborepo |
 | 스캐폴드 커밋 (`feat: Project init`) | ✅ | `main`에 커밋 |
 | 트렁크 기반 전환: GitHub 기본 브랜치 `main`으로 변경, `develop` 정리 | ⏸ | 사용자 확인 후 진행 |
 | 도메인 확정 (D-1, A-1) | ⏸ | W2 배포 전 필수 |
@@ -31,7 +31,7 @@
 
 | 스토리 | 내용 | 상태 | 선행 조건 |
 | --- | --- | --- | --- |
-| US-001 | 모노레포·CI (typecheck/lint/test, Vercel 프리뷰) | ⬜ | B-1 |
+| US-001 | 모노레포·CI (typecheck/lint/test, Vercel 프리뷰) | 🟦 | 워크스페이스·CI 완료. 남은 것: GitHub 브랜치 보호(CI 실패 시 머지 차단), Vercel 프로젝트 연결 |
 | US-002 | 디자인 토큰·기본 레이아웃 🖥 | ⬜ | |
 | US-003 | 룰셋 스키마 + `kr/2026-01`, `kr/2026-07` 시드 | ⬜ | 공식 고시로 요율 재대조 |
 | US-004 | 간이세액표 데이터화 | ⬜ | A-4 원본 파일 |
@@ -117,4 +117,6 @@
 | --- | --- | --- |
 | 2026-10-09 | URL 위치 | 사이트 루트(`/`) = 라이프커브. PRD 사이트맵 그대로 |
 | 2026-10-09 | 호스팅 | Vercel |
+| 2026-10-09 | 레포 구조 | pnpm 워크스페이스 + Turborepo. `apps/web`, `packages/engine`, `packages/rules` (PRD §14.2) |
+| 2026-10-09 | 룰셋 출처 | 당분간 `packages/rules`의 JSON. web의 룰셋 로더 한 곳으로 접근을 모아 두고, 백엔드 룰셋 API가 생기면 로더만 Next 서버 측 런타임 조회(`'use cache'` + `cacheTag` + revalidate 엔드포인트)로 교체. 브라우저에서 직접 조회하지 않는다 (SEO·첫 화면·장애 격리) |
 | 2026-10-09 | 브랜치 전략 | Trunk-based. `main`에서 분기·머지, 머지 시 dev/preview 배포, 운영은 선택한 `main` 커밋에서 배포. `develop` 미사용 |

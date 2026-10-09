@@ -1,0 +1,7 @@
+packages:
+  - apps/*
+  - packages/*
+
+# 의존성 설치 스크립트 허용 목록 (기본 차단). 바이너리는 optionalDependencies로 이미 받으므로 실행하지 않는다.
+allowBuilds:
+  unrs-resolver: false
