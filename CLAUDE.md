@@ -35,6 +35,13 @@ pnpm --filter @lifecurve/engine test   # 패키지 하나만
 - `main`에 머지되면 dev/preview 환경에 자동 배포한다.
 - 운영 배포는 원하는 시점의 `main` 커밋을 골라 내보낸다.
 
+### 에이전트 작업 규칙
+
+- **`main`에 직접 커밋·머지·push 절대 금지.** 모든 작업은 `main`에서 새 브랜치를 따서 커밋한다.
+- 작업이 끝나면 브랜치를 GitHub에 push하고 **`main` 대상 PR을 만든다** (GitHub 기본 브랜치가 아직 `develop`이라 `--base main`을 명시).
+- PR 리뷰·머지, 로컬 `main` pull은 사용자가 직접 한다. 에이전트는 하지 않는다.
+- 다음 작업 브랜치는 `origin/main` 최신 기준으로 딴다 (`git fetch` 후 `git switch -c <branch> origin/main`).
+
 ## 커밋 메시지 규칙
 
 ```
