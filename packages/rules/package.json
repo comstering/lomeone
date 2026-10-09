@@ -7,14 +7,19 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "build": "node scripts/check-rules.ts",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts",
+    "test": "vitest run"
   },
   "devDependencies": {
     "eslint": "^9",
     "typescript": "^5",
     "typescript-eslint": "^8.71.1",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "@types/node": "^20"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
   }
 }

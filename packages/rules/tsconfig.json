@@ -1,8 +1,10 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2023"],
-    "types": []
+    "lib": ["ES2024"],
+    "types": [],
+    // validate.ts·scripts는 Node가 직접 실행하므로 상대 import에 .ts 확장자를 쓴다
+    "allowImportingTsExtensions": true
   },
-  "include": ["src"]
+  "include": ["src", "kr/*.json"]
 }
