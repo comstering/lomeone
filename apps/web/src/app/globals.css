@@ -1,26 +1,109 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * 디자인 토큰 — 이 파일이 단일 출처다 (PRD §14.1).
+ * 색 체계는 회계 장부에서 왔다: 장부 종이 바탕, 먹색 글씨, 흑자(증가)는 장부 녹색, 적자(감소·고갈)는 빨간 글씨.
+ * 컴포넌트는 hex를 직접 쓰지 않고 아래 Tailwind 유틸리티(bg-paper, text-ink, text-gain …)만 쓴다.
+ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light dark;
+
+  /* 바탕 */
+  --paper: #f5f7f4; /* 페이지 바탕 */
+  --surface: #ffffff; /* 입력 폼·결과 영역 */
+  --rule: #d9e0da; /* 구분선·테두리 */
+
+  /* 글씨 */
+  --ink: #16201a; /* 본문 */
+  --ink-muted: #56625a; /* 보조 설명·라벨 */
+
+  /* 의미 색 */
+  --gain: #0e6b4f; /* 곡선·증가·주요 동작 */
+  --gain-soft: #e1efe8; /* 증가 칩 배경 */
+  --on-gain: #ffffff; /* gain 위 글씨 */
+  --loss: #b3261e; /* 감소·자산 고갈·오류 */
+  --loss-soft: #f9e3e1; /* 감소 칩·경고 배너 배경 */
+
+  --focus: #1f5fbf; /* 키보드 포커스 링. 녹색·빨강과 구분되는 파랑 */
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #0f1512;
+    --surface: #161e19;
+    --rule: #2a352e;
+
+    --ink: #e6ece7;
+    --ink-muted: #9aa79f;
+
+    --gain: #4fc59a;
+    --gain-soft: #173328;
+    --on-gain: #06281c;
+    --loss: #ff8a80;
+    --loss-soft: #3a1b19;
+
+    --focus: #8ab4ff;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-rule: var(--rule);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-gain: var(--gain);
+  --color-gain-soft: var(--gain-soft);
+  --color-on-gain: var(--on-gain);
+  --color-loss: var(--loss);
+  --color-loss-soft: var(--loss-soft);
+  --color-focus: var(--focus);
+
+  /* 웹폰트 없이 시스템 한글 서체를 쓴다 (LCP·초기 JS 예산, PRD §14.4) */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR",
+    system-ui, sans-serif;
+}
+
+@theme {
+  /* 페이지 폭과 여백 — 360px 기준 좌우 16px, 1024px 이상에서 2단 확장 (PRD §6) */
+  --container-page: 72rem;
+  --spacing-gutter: 1rem;
+
+  --radius-control: 0.375rem;
+  --radius-panel: 0.75rem;
+
+  /* 결과 숫자용 크기. 본문 스케일은 Tailwind 기본(text-sm … text-4xl)을 쓴다 */
+  --text-figure: 2.5rem;
+  --text-figure--line-height: 1.1;
+}
+
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    word-break: keep-all; /* 한국어 어절 단위 줄바꿈 */
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 모든 인터랙티브 요소에서 키보드 포커스가 보여야 한다 (US-002, FR-35) */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
