@@ -33,7 +33,7 @@
 | --- | --- | --- | --- |
 | US-001 | 모노레포·CI (typecheck/lint/test, Vercel 프리뷰) | 🟦 | 워크스페이스·CI 완료. 남은 것: GitHub 브랜치 보호(CI 실패 시 머지 차단), Vercel 프로젝트 연결 |
 | US-002 | 디자인 토큰·기본 레이아웃 🖥 | 🟦 | PR 리뷰 대기 (`feat/design-tokens-layout`) |
-| US-003 | 룰셋 스키마 + `kr/2026-01`, `kr/2026-07` 시드 | ⬜ | 공식 고시로 요율 재대조 |
+| US-003 | 룰셋 스키마 + `kr/2026-01`, `kr/2026-07` 시드 | 🟦 | PR 리뷰 대기 (`feat/rules-schema`). 미확인 6필드(보험료 끝전 절사, 2026 소득세율) |
 | US-004 | 간이세액표 데이터화 | ⬜ | A-4 원본 파일 |
 | US-005 | `calcSalaryTakeHome` + 역산 + 골든 30건 | ⬜ | A-4 골든 데이터, C-5 |
 
@@ -101,6 +101,7 @@
 | E2E 4종 (퍼널·개인정보·재방문·저장 불가) | ⬜ |
 | Lighthouse CI 예산, axe 접근성 | ⬜ |
 | PRD §20 출시 체크리스트 | ⬜ |
+| Vercel Production 환경 변수 `RULES_STRICT=1` (미확인 룰셋 필드가 있으면 빌드 실패) | ⬜ |
 
 ## 출시 후
 
@@ -120,4 +121,5 @@
 | 2026-10-09 | 레포 구조 | pnpm 워크스페이스 + Turborepo. `apps/web`, `packages/engine`, `packages/rules` (PRD §14.2) |
 | 2026-10-09 | 룰셋 출처 | 당분간 `packages/rules`의 JSON. web의 룰셋 로더 한 곳으로 접근을 모아 두고, 백엔드 룰셋 API가 생기면 로더만 Next 서버 측 런타임 조회(`'use cache'` + `cacheTag` + revalidate 엔드포인트)로 교체. 브라우저에서 직접 조회하지 않는다 (SEO·첫 화면·장애 격리) |
 | 2026-10-09 | 디자인 토큰 | "장부" 방향: 장부 종이 바탕, 먹색 글씨, 증가=장부 녹색(`gain`), 감소·고갈=적자 빨강(`loss`). 웹폰트 없이 시스템 한글 서체 (LCP·JS 예산). 토큰은 `apps/web/src/app/globals.css` |
+| 2026-10-09 | 룰셋 strict 모드 | 확인일 없는 필드는 평소 경고만, `RULES_STRICT=1`일 때 빌드 실패. `VERCEL_ENV`로 자동 판단하지 않는다 (main 배포가 막히지 않도록) |
 | 2026-10-09 | 브랜치 전략 | Trunk-based. `main`에서 분기·머지, 머지 시 dev/preview 배포, 운영은 선택한 `main` 커밋에서 배포. `develop` 미사용 |

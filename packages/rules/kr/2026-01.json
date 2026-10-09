@@ -1,0 +1,163 @@
+{
+  "country": "KR",
+  "version": "2026.01.0",
+  "effectiveFrom": "2026-01-01",
+  "effectiveTo": "2026-06-30",
+  "socialInsurance": {
+    "nationalPension": {
+      "employeeRate": {
+        "value": 0.0475,
+        "source": "https://www.4insure.or.kr/pbiz/feii/inscIntroView.do",
+        "verifiedAt": "2026-10-09",
+        "note": "2026년 9.5%(근로자·사용자 각 4.75%). 2033년 13%까지 매년 0.5%p 인상"
+      },
+      "baseMonthlyIncomeMin": {
+        "value": 400000,
+        "source": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0038M0.do",
+        "verifiedAt": "2026-10-09",
+        "note": "2025.7.1.~2026.6.30. 적용"
+      },
+      "baseMonthlyIncomeMax": {
+        "value": 6370000,
+        "source": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0038M0.do",
+        "verifiedAt": "2026-10-09",
+        "note": "2025.7.1.~2026.6.30. 적용"
+      },
+      "baseIncomeTruncateUnit": {
+        "value": 1000,
+        "source": "https://www.nps.or.kr/pnsinfo/ntpsklg/getOHAF0038M0.do",
+        "verifiedAt": "2026-10-09",
+        "note": "기준소득월액은 신고 소득월액에서 천원 미만 절사"
+      },
+      "premiumTruncateUnit": {
+        "value": 10,
+        "source": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EA%B3%A0%EA%B8%88%EA%B4%80%EB%A6%AC%EB%B2%95/%EC%A0%9C47%EC%A1%B0",
+        "verifiedAt": null,
+        "note": "국고금 끝수 10원 미만 버림(국고금 관리법 제47조)이 근거로 추정되나 미확인 — 골든 테스트(US-005)로 확정"
+      }
+    },
+    "health": {
+      "totalRate": {
+        "value": 0.0719,
+        "source": "https://www.nhis.or.kr/nhis/together/wbhaea01000m01.do?mode=view&articleNo=11008009",
+        "verifiedAt": "2026-10-09"
+      },
+      "employeeRate": {
+        "value": 0.03595,
+        "source": "https://www.4insure.or.kr/pbiz/feii/inscIntroView.do",
+        "verifiedAt": "2026-10-09",
+        "note": "보수월액보험료는 근로자·사용자 각 50%"
+      },
+      "premiumTruncateUnit": {
+        "value": 10,
+        "source": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EA%B3%A0%EA%B8%88%EA%B4%80%EB%A6%AC%EB%B2%95/%EC%A0%9C47%EC%A1%B0",
+        "verifiedAt": null,
+        "note": "국고금 끝수 10원 미만 버림(국고금 관리법 제47조)이 근거로 추정되나 미확인 — 골든 테스트(US-005)로 확정"
+      }
+    },
+    "longTermCare": {
+      "incomeRate": {
+        "value": 0.009448,
+        "source": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1487817&mid=a10503010100",
+        "verifiedAt": "2026-10-09"
+      },
+      "rateOfHealthPremium": {
+        "value": 0.1314,
+        "source": "https://www.mohw.go.kr/board.es?act=view&bid=0027&list_no=1487817&mid=a10503010100",
+        "verifiedAt": "2026-10-09",
+        "note": "공표값(반올림). 0.9448/7.19로 계산할지 13.14%를 곱할지는 US-005 골든 테스트로 확정 (review C-5)"
+      }
+    },
+    "employment": {
+      "employeeRate": {
+        "value": 0.009,
+        "source": "https://www.4insure.or.kr/pbiz/feii/inscIntroView.do",
+        "verifiedAt": "2026-10-09",
+        "note": "실업급여 1.8% 중 근로자 부담분"
+      }
+    }
+  },
+  "incomeTax": {
+    "localIncomeTaxRate": {
+      "value": 0.1,
+      "source": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=2289&cntntsId=7701",
+      "verifiedAt": "2026-10-09",
+      "note": "원천징수 시 소득세액의 10%를 지방소득세로 특별징수"
+    },
+    "brackets": {
+      "value": [
+        {
+          "upTo": 14000000,
+          "rate": 0.06
+        },
+        {
+          "upTo": 50000000,
+          "rate": 0.15
+        },
+        {
+          "upTo": 88000000,
+          "rate": 0.24
+        },
+        {
+          "upTo": 150000000,
+          "rate": 0.35
+        },
+        {
+          "upTo": 300000000,
+          "rate": 0.38
+        },
+        {
+          "upTo": 500000000,
+          "rate": 0.4
+        },
+        {
+          "upTo": 1000000000,
+          "rate": 0.42
+        },
+        {
+          "upTo": null,
+          "rate": 0.45
+        }
+      ],
+      "source": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7667&mi=2227",
+      "verifiedAt": null,
+      "note": "국세청 표는 '2023~2025년 귀속'까지 표기. 2026년 귀속에 개정 근거는 찾지 못했으나 공식 확인 전"
+    }
+  },
+  "nonTaxable": {
+    "mealAllowanceMonthly": {
+      "value": 200000,
+      "source": "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=6588&cntntsId=7867",
+      "verifiedAt": "2026-10-09",
+      "note": "식사·음식물을 제공받지 않는 근로자의 월 20만원 이하 식사대"
+    }
+  },
+  "pension": {
+    "replacementRate": {
+      "value": 0.43,
+      "source": "https://www.mohw.go.kr/board.es?mid=a10503000000&bid=0027&list_no=1485039&act=view",
+      "verifiedAt": "2026-10-09",
+      "note": "2026.1.1. 이후 가입기간부터 43% (2025년 연금개혁)"
+    },
+    "aValueMonthly": {
+      "value": 3193511,
+      "source": "https://www.nps.or.kr/comm/quick/getOHAH0011P0.do",
+      "verifiedAt": "2026-10-09",
+      "note": "2026년 적용 A값 (공단 예상연금 계산 안내)"
+    }
+  },
+  "acquisitionTax": {
+    "housing": {
+      "value": {
+        "lowThreshold": 600000000,
+        "lowRate": 0.01,
+        "highThreshold": 900000000,
+        "highRate": 0.03,
+        "localEducationTaxRatio": 0.1
+      },
+      "source": "https://etax.seoul.go.kr/AcqutaxCalcAction.view?tr_code=m_sweb",
+      "verifiedAt": "2026-10-09",
+      "note": "서울시 지방세 안내 기준. 6억 초과~9억 이하 세율의 소수점 처리 방식은 미확인. 생애최초 감면·다주택 중과 제외"
+    }
+  }
+}

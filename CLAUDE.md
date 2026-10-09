@@ -9,6 +9,9 @@
   - `apps/web`: Next.js 16.4 (App Router, Turbopack, Cache Components) + React 19 + Tailwind CSS 4
   - `packages/engine`: 계산 엔진. **순수 함수만** — 런타임 의존성 0개, tsconfig에 DOM·Node 타입 없음, ESLint로 `new Date()`·`Date.now`·`Math.random`·룰셋 값 import 금지. 기준일·룰셋은 인자로 받는다
   - `packages/rules`: 세제 룰셋 스키마·데이터. 엔진은 여기서 **타입만** import한다
+    - 요율 데이터는 `packages/rules/kr/YYYY-MM.json`. 모든 수치에 `source`(공식 URL)·`verifiedAt`. 요율을 코드에 하드코딩하지 않는다 (FR-8)
+    - `pnpm build` 때 `scripts/check-rules.ts`가 스키마·기간 겹침·출처를 검사한다. `RULES_STRICT=1`이면 `verifiedAt`이 빈 필드도 실패
+    - 런타임 코드(`src/index.ts`)는 zod를 import하지 않는다. zod는 검증 스크립트·테스트 전용
 - 워크스페이스 패키지는 TS 원본을 `exports`로 내보내고 web의 `transpilePackages`로 트랜스파일한다 (별도 빌드 단계 없음)
 - TypeScript 공통 설정은 `tsconfig.base.json` (`strict`, `noUncheckedIndexedAccess`)
 - Tailwind 4는 CSS 우선 설정이라 `tailwind.config.js`가 없다. 토큰은 `apps/web/src/app/globals.css`의 `@theme`에 정의
