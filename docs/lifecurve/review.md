@@ -25,7 +25,7 @@
 | --- | --- | --- | --- | --- |
 | B-1 | 🔴 | **레포 구조.** PRD는 pnpm 워크스페이스(`apps/web`, `packages/*`)인데 현재 레포는 yarn 1 단일 앱이다. | 사용자 확인 대기 | ✅ pnpm 모노레포 + Turborepo (10/09) |
 | B-2 | 🟠 | **CSP(FR-31) vs SSG(FR-32).** Next 16 문서 기준, 논스 기반 CSP는 동적 렌더링이 필수라 SSG와 함께 쓸 수 없다. | ① Next의 실험 기능 `experimental.sri`(해시 기반, SSG 유지)로 `script-src 'self'` 시도 → ② 안 되면 정적 CSP + `script-src 'unsafe-inline'`. 개인정보 유출을 막는 핵심은 `connect-src`·`img-src`·`form-action` 제한이므로 이쪽은 엄격하게 유지 | |
-| B-3 | 🟠 | **Sentry가 FR-30("분석 1종 외 제3자 없음")과 초기 JS 120KB 예산에 걸린다.** Sentry SDK는 단독으로도 예산의 상당 부분이다. | W1에 빈 페이지 번들 크기를 먼저 측정. MVP는 Sentry 제외, 또는 W6에 지연 로드로 추가 | |
+| B-3 | 🟠 | **Sentry가 FR-30("분석 1종 외 제3자 없음")과 초기 JS 120KB 예산에 걸린다.** Sentry SDK는 단독으로도 예산의 상당 부분이다. | W1에 빈 페이지 번들 크기를 먼저 측정. MVP는 Sentry 제외, 또는 W6에 지연 로드로 추가. **측정 (10/09, `pnpm --filter @lifecurve/web bundle`):** 클라이언트 컴포넌트 0개인 빈 페이지가 이미 **134.9KB(gzip)** · 115.7KB(brotli). 전부 프레임워크 기본값(React 19 + Next 16 라우터, 청크 6개, noModule 폴리필 제외)이라 120KB(gzip) 예산은 앱 코드 없이도 초과한다. → Sentry는 MVP 제외. 예산 기준 재정의 필요 (사용자 결정 대기) | |
 | B-4 | 🟠 | **zod가 클라이언트 번들에 들어가면 안 된다.** 룰셋 검증은 빌드 시점, 저장 데이터 마이그레이션(§13.2)은 런타임이다. | 룰셋 = 빌드 시 zod 검증 후 JSON만 번들. 저장 데이터 = 수기 타입 가드 또는 `zod/mini` | |
 | B-5 | 🟠 | **룰셋 기준일을 어디서 정하나.** SSG HTML은 빌드 시점 룰셋으로 그려지는데 클라이언트가 `new Date()`로 다시 고르면 하이드레이션 불일치가 나고, 연말 경계에서는 숫자가 달라진다. `cacheComponents: true`라 서버 컴포넌트의 현재 시각 접근도 제약이 있다. | 기준일은 빌드 시 결정해 props로 주입. 룰셋이 바뀌면 재배포(Vercel 예약 배포 또는 수동) | |
 | B-6 | 🟡 | §5.2 "쿼리 변형은 정규 URL로 301" ↔ US-012 `/sim?from=salary` 충돌. | `from`도 sessionStorage 핸드오프에만 싣거나, `/sim`의 `from` 파라미터만 예외 처리 | |
