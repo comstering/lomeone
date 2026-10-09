@@ -35,7 +35,7 @@
 | US-002 | 디자인 토큰·기본 레이아웃 🖥 | 🟦 | PR 리뷰 대기 (`feat/design-tokens-layout`) |
 | US-003 | 룰셋 스키마 + `kr/2026-01`, `kr/2026-07` 시드 | 🟦 | PR 리뷰 대기 (`feat/rules-schema`). 미확인 6필드(보험료 끝전 절사, 2026 소득세율) |
 | US-004 | 간이세액표 데이터화 | ⬜ | A-4 원본 파일 |
-| US-005 | `calcSalaryTakeHome` + 역산 + 골든 30건 | ⬜ | A-4 골든 데이터, C-5 |
+| US-005 | `calcSalaryTakeHome` + 역산 + 골든 30건 | ⬜ | A-4 골든 데이터 (양식 준비됨: `packages/engine/test/golden/salary.csv`, 값 기입 대기), C-5 |
 
 추가로 이번 주에: 빈 페이지 번들 크기 측정 (B-3), CSP 방식 확인 (B-2)
 
