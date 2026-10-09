@@ -38,7 +38,7 @@
 | US-004 | 간이세액표 데이터화 | ⬜ | A-4 원본 파일 |
 | US-005 | `calcSalaryTakeHome` + 역산 + 골든 30건 | ⬜ | A-4 골든 데이터 (양식 준비됨: `packages/engine/test/golden/salary.csv`, 값 기입 대기), C-5 |
 
-추가로 이번 주에: 빈 페이지 번들 크기 측정 (B-3) ✅ 10/09 — 빈 페이지 134.9KB(gzip). 예산을 계산기 170KB·시뮬레이터 250KB로 상향하고 CI에 검사 추가 · CSP 방식 확인 (B-2) ⬜
+추가로 이번 주에: 빈 페이지 번들 크기 측정 (B-3) ✅ 10/09 — 빈 페이지 134.9KB(gzip). 예산을 계산기 170KB·시뮬레이터 250KB로 상향하고 CI에 검사 추가 · CSP 방식 확인 (B-2) ✅ 10/09 — 정적 CSP 헤더 적용
 
 ## Phase 2 — W2 (10/19–10/23) 첫 배포, H1 측정 시작
 
@@ -124,4 +124,5 @@
 | 2026-10-09 | 디자인 토큰 | "장부" 방향: 장부 종이 바탕, 먹색 글씨, 증가=장부 녹색(`gain`), 감소·고갈=적자 빨강(`loss`). 웹폰트 없이 시스템 한글 서체 (LCP·JS 예산). 토큰은 `apps/web/src/app/globals.css` |
 | 2026-10-09 | 룰셋 strict 모드 | 확인일 없는 필드는 평소 경고만, `RULES_STRICT=1`일 때 빌드 실패. `VERCEL_ENV`로 자동 판단하지 않는다 (main 배포가 막히지 않도록) |
 | 2026-10-09 | 초기 JS 예산 | 계산기 120→170KB, 시뮬레이터 200→250KB(gzip). 빈 페이지가 프레임워크 기본값만 134.9KB (B-3). CI에서 `pnpm --filter @lifecurve/web bundle`로 검사 |
+| 2026-10-09 | CSP | 정적 CSP 헤더 (`next.config.ts`). 인라인 스크립트 때문에 `script-src 'unsafe-inline'`은 허용하고, 데이터 유출 경로(`connect-src`·`img-src`·`form-action`)는 `'self'`로 제한. 분석 도구를 붙일 때 그 도메인만 추가 (B-2) |
 | 2026-10-09 | 브랜치 전략 | Trunk-based. `main`에서 분기·머지, 머지 시 dev/preview 배포, 운영은 선택한 `main` 커밋에서 배포. `develop` 미사용 |
