@@ -34,10 +34,10 @@
     const days = DAYS.slice(0, o.days), rows = (o.to - o.from) * 2;
     el.classList.add("slot"); el.dataset.mode = o.mode; el.style.setProperty("--days", days.length);
     const sel = new Set(), total = o.people.length;
-    let html = `<div class="slot-scroll"><div class="slot-table"><div class="slot-head"><div></div>${days.map((d, i) => `<div><button type="button" data-day="${i}" aria-label="${d.full} 전부 토글"><span class="d">${d.d}</span><span class="w">${d.w}</span></button></div>`).join("")}</div>`;
+    let html = `<div class="slot-scroll"><div class="slot-table" role="grid" aria-label="${o.mode === "input" ? "가능한 시간 칠하기" : "응답 히트맵"}" aria-colcount="${days.length}" ${o.mode === "input" ? 'aria-multiselectable="true"' : ""}><div class="slot-head" role="row"><div role="presentation"></div>${days.map((d, i) => `<div role="columnheader"><button type="button" data-day="${i}" aria-label="${d.full} 전부 토글"><span class="d">${d.d}</span><span class="w">${d.w}</span></button></div>`).join("")}</div>`;
     for (let r = 0; r < rows; r++) {
       const hour = r % 2 === 0, t = o.from + r / 2;
-      html += `<div class="slot-axis"><div>${hour ? t + "시" : ""}</div></div>`;
+      html += `<div class="slot-row" role="row" aria-label="${ampm(t)}${t % 1 ? " 30분" : ""}"><div class="ax" role="rowheader" ${hour ? "" : 'aria-hidden="true"'}>${hour ? t + "시" : ""}</div>`;
       for (let d = 0; d < days.length; d++) {
         let cls = "cell" + (hour ? " hour" : ""), extra = "";
         if (o.mode !== "input") {
@@ -48,8 +48,9 @@
           const c = Object.keys(PEOPLE).filter((n) => avail(n, d, r, o.from)).length;
           if (c) cls += ` h${Math.min(5, Math.ceil((c / 5) * 5))}c`;
         }
-        html += `<div class="${cls}" role="gridcell" tabindex="${r === 0 && d === 0 ? 0 : -1}" data-d="${d}" data-r="${r}" aria-label="${days[d].full} ${ampm(t)}${t % 1 ? " 30분" : ""}"${extra}></div>`;
+        html += `<div class="${cls}" role="gridcell" tabindex="${r === 0 && d === 0 ? 0 : -1}" data-d="${d}" data-r="${r}" aria-label="${days[d].full} ${ampm(t)}${t % 1 ? " 30분" : ""}${o.mode !== "input" ? `, ${(extra.match(/data-c="(\d+)"/) || [])[1]}/${total}명 가능` : ""}"${extra}></div>`;
       }
+      html += `</div>`;
     }
     html += `</div></div>`;
     el.innerHTML = html + (days.length > 5 ? `<div class="slot-pos">← 옆으로 넘겨 보세요 · 1–5 / ${days.length}일</div>` : "");

@@ -38,6 +38,21 @@
 - 카카오 심볼은 일반 말풍선 아이콘(공식 자산 교체 필요), 파비콘 PNG·단색/다크 로고 미제작
 - 법적 문서 본문·FAQ 답변은 내가 쓴 샘플
 
+### 검수 결과 (2026-10-29, 2차) — 반영 완료
+- **웹 인터페이스 가이드라인(`web-design-guidelines`)** + **impeccable `critique`(detector)** + 실측으로 검수 후 시안 수정:
+  - 시트: 닫힌 시트가 Tab 포커스를 받던 버그 → `visibility:hidden`, 열리면 배경 `inert`(포커스 트랩) + 닫을 때 열었던 요소로 포커스 복귀, 첫 버튼 강제 포커스 제거. `overscroll-behavior: contain`.
+  - 그리드 ARIA: `role=grid/row/columnheader/rowheader/gridcell`, 히트맵 셀 라벨에 "n/N명 가능".
+  - 총무 추천 카드: 버튼 안 버튼 중첩 제거(div + 확정 버튼). 확정 취소에 확인 시트 추가(`?sheet=uncf`).
+  - 대비 버그 2건: 다크 `danger` 버튼 글자(2.3:1 → `--danger-fg`), 선택된 칩 hover 시 글자 사라짐, 비활성 primary hover 색.
+  - 320px 가로 넘침(달력) 수정, OG 페이지 모바일 넘침 수정, 말줄임(`min-width:0`), 칩 최대 폭.
+  - `theme-color`·`color-scheme` 메타, 본문 바로가기 링크, safe-area(헤더), `touch-action: manipulation`, `text-wrap: balance`, 폼 `name/autocomplete`, 페이지 `h1`, `translate="no"`(브랜드명).
+  - 결과 화면: **정답("가장 좋은 시간")을 응답자 칩보다 위로** (DAC-04 대비).
+  - 히트맵 1단계 농도 16→20% (색각 이상 시뮬레이션에서 가장 약한 구간 개선).
+- **실측(Chrome 헤드리스, iframe):** 360×640·360×580(인앱)·320×568에서 SCR-01·02·03·05·06·07·08·09 주 버튼이 첫 화면에 보임, 320px 가로 넘침 없음(수정 후). SCR-04는 캡처로 카톡 버튼 노출 확인.
+- **색각 이상 시뮬레이션(Machado, 계산):** 히트맵 7단계 인접 ΔE ≥ 5 (라이트/다크, A/B, 1·2·3형). 전원 칸은 색 + 테두리 + 줄무늬 추가.
+- detector 잔여 15건은 의도/오탐: `repeating-gradient`(전원 칸 줄무늬 = 색각 이상 대응, 의도), `cramped-padding`(섹션 배경 전폭 + `.wrap` 안쪽 여백 구조, 오탐).
+- **위 검수는 코드·캡처 기준이다. 실제 기기·스크린리더(VoiceOver/TalkBack) 검증, 사용성 테스트는 여전히 미실시.**
+
 ## 4. 다음 할 일 (우선순위 순)
 1. 사용자(기획자/창업자)가 `QUESTIONS.md` 답변 칸에 적은 것을 읽고 → 시안·`DESIGN-SPEC.md` 반영, 반영한 질문은 `QUESTIONS.md`에 "반영됨" 표시.
 2. 답이 오면 2차 시안: Q-04(날짜만·요일 결과), Q-08, Q-11, S-06 화면 추가.
@@ -47,6 +62,7 @@
 ## 5. 작업 로그 (최신이 위. 작업 끝날 때마다 한 줄 이상 추가)
 | 날짜 | 내용 | 산출물/PR |
 | --- | --- | --- |
+| 2026-10-29 | 검수(web-design-guidelines, impeccable critique/detector, 360/320 실측, 색각 시뮬레이션) 후 시안 수정, DESIGN-SPEC·QUESTIONS 갱신 | 브랜치 `fix/design-review` |
 | 2026-10-28 | 인수인계 체계 추가: 이 파일 + `cowork/design/CLAUDE.md` | 이 PR |
 | 2026-10-28 | PRD·디자인을 브랜치 `prd`/`design`으로 push, 머지 완료, 로컬 main pull | PR #7, #8 |
 | 2026-10-28 | 1차 시안 완성(화면 전체, 토큰, 컴포넌트, 로고 2안, OG 템플릿), `QUESTIONS.md`(질문 18·제안 6)·`DESIGN-SPEC.md` 작성 | `cowork/design/` |

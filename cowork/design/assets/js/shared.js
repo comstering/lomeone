@@ -11,6 +11,10 @@
     try { if (v) sessionStorage.setItem("lm-" + k, v); else v = sessionStorage.getItem("lm-" + k); } catch (e) {}
     if (v && v !== "auto" && v !== "a") root.setAttribute("data-" + k, v);
   });
+  /* 다크 모드: color-scheme / theme-color 메타 */
+  [["color-scheme", "light dark", ""], ["theme-color", "#FFFFFF", "(prefers-color-scheme: light)"], ["theme-color", "#0F1514", "(prefers-color-scheme: dark)"]].forEach(([n, c, m]) => {
+    const e = document.createElement("meta"); e.name = n; e.content = c; if (m) e.media = m; document.head.appendChild(e);
+  });
   window.lmPrefs = (k, v) => {
     try { sessionStorage.setItem("lm-" + k, v); } catch (e) {}
     if (v === "auto" || v === "a") root.removeAttribute("data-" + k); else root.setAttribute("data-" + k, v);
@@ -28,7 +32,7 @@
   };
   window.icon = (n, extra = "") => `<svg class="icon ${extra}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n] || ""}"/></svg>`;
   window.lmSymbol = (s = 28) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lmc"><circle cx="11.5" cy="16" r="9"/></clipPath></defs><circle cx="11.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="var(--accent)" clip-path="url(#lmc)"/></svg>`;
-  const logo = `<a class="logo" href="home.html" aria-label="로미원 홈">${window.lmSymbol()}<span>lomeone</span><span class="ko">로미원</span></a>`;
+  const logo = `<a class="logo" href="home.html" aria-label="로미원 홈" translate="no">${window.lmSymbol()}<span>lomeone</span><span class="ko">로미원</span></a>`;
 
   document.querySelectorAll("[data-icon]").forEach((el) => { el.insertAdjacentHTML("afterbegin", icon(el.dataset.icon)); });
 
@@ -42,6 +46,10 @@
     else inner = `<a class="icon-btn" href="${h.dataset.href || "javascript:history.back()"}" aria-label="뒤로">${icon("back")}</a><div class="title">${t}</div><nav>${right}</nav>`;
     h.outerHTML = `<header class="site-header"><div class="wrap inner">${inner}</div></header>`;
   }
+
+  /* 본문 바로가기 (키보드 사용자) */
+  const mainEl = document.querySelector("main");
+  if (mainEl) { mainEl.id = mainEl.id || "main"; mainEl.tabIndex = -1; document.body.insertAdjacentHTML("afterbegin", `<a class="skip" href="#${mainEl.id}">본문 바로가기</a>`); }
 
   /* C-02 SiteFooter */
   const f = document.querySelector("[data-footer]");
@@ -59,8 +67,18 @@
 
   /* C-15 Sheet : [data-open="#id"]  [data-close] */
   const sc = () => document.querySelector(".scrim") || (() => { const e = document.createElement("div"); e.className = "scrim"; document.body.appendChild(e); return e; })();
-  window.openSheet = (id) => { const s = document.querySelector(id); if (!s) return; closeSheets(); s.classList.add("open"); sc().classList.add("open"); const f = s.querySelector("button,a,input"); f && setTimeout(() => f.focus(), 50); };
-  window.closeSheets = () => { document.querySelectorAll(".sheet.open").forEach((s) => s.classList.remove("open")); sc().classList.remove("open"); };
+  /* 시트가 열리면 배경은 inert(포커스·스크린리더 차단 = 포커스 트랩), 닫히면 열었던 요소로 포커스 복귀. 시트 자체에 포커스(첫 버튼 강조 방지) */
+  let opener = null;
+  window.openSheet = (id) => {
+    const s = document.querySelector(id); if (!s) return; closeSheets(true);
+    opener = document.activeElement; s.classList.add("open"); sc().classList.add("open");
+    document.querySelectorAll(".page").forEach((p) => (p.inert = true)); s.tabIndex = -1; setTimeout(() => s.focus({ preventScroll: true }), 30);
+  };
+  window.closeSheets = (keep) => {
+    document.querySelectorAll(".sheet.open").forEach((s) => s.classList.remove("open")); sc().classList.remove("open");
+    document.querySelectorAll(".page").forEach((p) => (p.inert = false));
+    if (!keep && opener && opener.isConnected) { opener.focus({ preventScroll: true }); opener = null; }
+  };
   document.addEventListener("click", (e) => {
     const o = e.target.closest("[data-open]"); if (o) { e.preventDefault(); openSheet(o.dataset.open); return; }
     if (e.target.closest("[data-close]") || e.target.classList.contains("scrim")) { closeSheets(); return; }

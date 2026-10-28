@@ -11,7 +11,7 @@
     root.innerHTML = `
     <form class="stack-lg" novalidate>
       <div class="field"><label for="mn">모임 이름 <span class="counter" id="cnt" hidden></span></label>
-        <input class="input" id="mn" maxlength="40" value="${o.name}" placeholder="우리 모임" autocomplete="off"><span class="hint">비워 두면 "우리 모임"으로 만들어져요</span></div>
+        <input class="input" id="mn" name="title" maxlength="40" value="${o.name}" placeholder="우리 모임" autocomplete="off" spellcheck="false"><span class="hint">비워 두면 "우리 모임"으로 만들어져요</span></div>
       <div class="seg" role="radiogroup" aria-label="모드" id="mode">
         <button type="button" role="radio" aria-checked="${o.mode === "time"}" data-v="time">날짜+시간</button>
         <button type="button" role="radio" aria-checked="${o.mode === "date"}" data-v="date">날짜만</button></div>
