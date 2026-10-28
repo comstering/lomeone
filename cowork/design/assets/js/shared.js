@@ -5,11 +5,16 @@
   const q = new URLSearchParams(location.search);
   const root = document.documentElement;
 
-  /* 테마·브랜드 미리보기: ?theme=dark  ?brand=b  (페이지 이동 시 유지) */
-  ["theme", "brand"].forEach((k) => {
+  /* 테마 미리보기: ?theme=dark  (페이지 이동 시 유지) */
+  ["theme"].forEach((k) => {
     let v = q.get(k);
     try { if (v) sessionStorage.setItem("lm-" + k, v); else v = sessionStorage.getItem("lm-" + k); } catch (e) {}
-    if (v && v !== "auto" && v !== "a") root.setAttribute("data-" + k, v);
+    if (v && v !== "auto") root.setAttribute("data-" + k, v);
+  });
+  /* 파비콘 (D-5 확정 로고) */
+  const FAV = new URL("../favicon/", document.currentScript.src).href;
+  [["icon", "image/svg+xml", FAV + "favicon.svg"], ["icon", "image/png", FAV + "favicon-32.png", "32x32"], ["icon", "image/png", FAV + "favicon-16.png", "16x16"], ["apple-touch-icon", "", FAV + "apple-touch-icon.png", "180x180"]].forEach(([r, t, h, s]) => {
+    const l = document.createElement("link"); l.rel = r; if (t) l.type = t; if (s) l.sizes = s; l.href = h; document.head.appendChild(l);
   });
   /* 다크 모드: color-scheme / theme-color 메타 */
   [["color-scheme", "light dark", ""], ["theme-color", "#FFFFFF", "(prefers-color-scheme: light)"], ["theme-color", "#0F1514", "(prefers-color-scheme: dark)"]].forEach(([n, c, m]) => {
@@ -17,7 +22,7 @@
   });
   window.lmPrefs = (k, v) => {
     try { sessionStorage.setItem("lm-" + k, v); } catch (e) {}
-    if (v === "auto" || v === "a") root.removeAttribute("data-" + k); else root.setAttribute("data-" + k, v);
+    if (v === "auto") root.removeAttribute("data-" + k); else root.setAttribute("data-" + k, v);
   };
 
   /* 아이콘 (24px 그리드, 선 1.75px) */
@@ -33,6 +38,18 @@
   window.icon = (n, extra = "") => `<svg class="icon ${extra}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n] || ""}"/></svg>`;
   window.lmSymbol = (s = 28) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lmc"><circle cx="11.5" cy="16" r="9"/></clipPath></defs><circle cx="11.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="var(--accent)" clip-path="url(#lmc)"/></svg>`;
   const logo = `<a class="logo" href="home.html" aria-label="로미원 홈" translate="no">${window.lmSymbol()}<span>lomeone</span><span class="ko">로미원</span></a>`;
+
+  /* 기능 아이콘 6종 (PRD §2.4): 선 2.25px · 둥근 끝 · 채움은 --accent-subtle 한 톤. 1단계는 약속만 쓰고 나머지는 "곧 나와요"·2단계용 */
+  const FI = {
+    meet: `<rect x="7" y="7" width="14" height="14" rx="4" fill="var(--accent-subtle)"/><rect x="27" y="7" width="14" height="14" rx="4"/><rect x="7" y="27" width="14" height="14" rx="4"/><rect x="27" y="27" width="14" height="14" rx="4" fill="var(--accent)" stroke="var(--accent)"/><path d="m31 34 3 3 5-6" stroke="var(--accent-fg)"/>`,
+    ladder: `<path d="M15 6v36M33 6v36"/><path d="M15 15h18M15 25h18M15 35h18" stroke-dasharray="0"/><path d="M15 25l18 10" stroke="var(--accent)"/><circle cx="15" cy="6" r="0"/>`,
+    team: `<circle cx="14" cy="15" r="6" fill="var(--accent-subtle)"/><path d="M4 38a10 10 0 0 1 20 0z" fill="var(--accent-subtle)"/><circle cx="34" cy="15" r="6"/><path d="M24 38a10 10 0 0 1 20 0z"/><path d="M24 6v36" stroke-dasharray="3 4" stroke="var(--accent)"/>`,
+    wheel: `<circle cx="24" cy="26" r="16" fill="var(--accent-subtle)"/><path d="M24 26V10M24 26l13.9 8M24 26l-13.9 8"/><circle cx="24" cy="26" r="3" fill="var(--accent)" stroke="var(--accent)"/><path d="m20 4 4 7 4-7z" fill="var(--accent)" stroke="var(--accent)"/>`,
+    seat: `<circle cx="24" cy="24" r="8" fill="var(--accent-subtle)"/><circle cx="24" cy="8" r="3.5"/><circle cx="24" cy="40" r="3.5"/><circle cx="8" cy="24" r="3.5"/><circle cx="40" cy="24" r="3.5" fill="var(--accent)" stroke="var(--accent)"/>`,
+    paper: `<path d="M10 8h24a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H10z" fill="var(--accent-subtle)"/><path d="M16 17h14M16 24h14M16 31h8"/><path d="M10 8c-4 0-4 8 0 8M10 16c-4 0-4 8 0 8" stroke="var(--accent)"/>`,
+  };
+  window.featureIcon = (n, s = 40) => `<svg class="feat-icon" width="${s}" height="${s}" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${FI[n] || ""}</svg>`;
+  window.FEATURE_ICONS = Object.keys(FI);
 
   document.querySelectorAll("[data-icon]").forEach((el) => { el.insertAdjacentHTML("afterbegin", icon(el.dataset.icon)); });
 
@@ -59,10 +76,13 @@
 
   /* C-14 Toast */
   let tt;
-  window.toast = (msg) => {
+  /* toast(msg, {label, kakao:true}) — 액션이 있으면 6초 유지 (읽고 누를 시간) */
+  window.toast = (msg, act) => {
     let el = document.querySelector(".toast");
     if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
-    el.textContent = msg; el.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), 3000);
+    el.textContent = msg;
+    if (act) { const b = document.createElement("button"); b.type = "button"; b.className = "toast-act"; b.textContent = act.label; b.onclick = () => { el.classList.remove("show"); toast(act.done || "카카오톡 공유 창이 열려요 (시안)"); }; el.appendChild(b); }
+    el.classList.toggle("has-act", !!act); el.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => el.classList.remove("show"), act ? 6000 : 3000);
   };
 
   /* C-15 Sheet : [data-open="#id"]  [data-close] */

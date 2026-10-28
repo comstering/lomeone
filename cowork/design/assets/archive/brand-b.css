@@ -1,0 +1,16 @@
+/* 보관: 브랜드 색 B안 코발트 (D-5에서 미채택, 2026-10-29). 되살리려면 tokens.css 뒤에 불러오고 <html data-brand="b"> */
+/* ---- B안: 코발트 ---- */
+:root[data-brand="b"] {
+  --accent: #2F55D4;        /* 흰 글자 6.2:1 */
+  --accent-hover: #2545B0;
+  --accent-subtle: #E8EEFF;
+  --accent-ink: #1E3A9E;
+}
+
+  :root[data-brand="b"]:not([data-theme="light"]) {
+    --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
+  }
+
+:root[data-theme="dark"][data-brand="b"] {
+  --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
+}

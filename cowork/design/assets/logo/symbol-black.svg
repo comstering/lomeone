@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="128" height="128" role="img" aria-label="lomeone 심볼">
+  <title>lomeone symbol — 단색 검정</title>
+  <defs><clipPath id="c"><circle cx="11.5" cy="16" r="9"/></clipPath></defs>
+  <circle cx="11.5" cy="16" r="9" fill="none" stroke="#121817" stroke-width="3"/>
+  <circle cx="20.5" cy="16" r="9" fill="none" stroke="#121817" stroke-width="3"/>
+  <circle cx="20.5" cy="16" r="9" fill="#121817" clip-path="url(#c)"/>
+</svg>

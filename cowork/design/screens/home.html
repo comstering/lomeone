@@ -30,7 +30,7 @@
   @media (prefers-reduced-motion: reduce) { .demo .grid span.f { background: var(--heat-3); } .demo .grid span.all { background: var(--heat-all); box-shadow: inset 0 0 0 2px var(--heat-all-ring); } .demo .result { opacity: 1; } }
   .soon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
   .soon-card { padding: var(--s-4); border: 1px dashed var(--border-strong); border-radius: var(--r-lg); opacity: .6; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
-  .soon-card .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-subtle); display: grid; place-items: center; font-size: 18px; }
+  .soon-card .ic { width: 44px; height: 44px; border-radius: 12px; background: var(--bg-subtle); display: grid; place-items: center; }
   .soon-card b { font-size: 15px; }
   @media (min-width: 1024px) {
     .hero { grid-template-columns: 1.1fr 1fr; align-items: center; padding-block: var(--s-16); gap: var(--s-12); }
@@ -91,12 +91,7 @@
     <section class="section subtle" id="soon">
       <div class="wrap stack">
         <h2 class="t-h1">곧 나와요</h2>
-        <div class="soon-grid" aria-label="준비 중인 도구">
-          <div class="soon-card"><span class="ic">🪜</span><b>사다리</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
-          <div class="soon-card"><span class="ic">👥</span><b>팀나누기</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
-          <div class="soon-card"><span class="ic">🎡</span><b>돌림판</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
-          <div class="soon-card"><span class="ic">🪑</span><b>자리배치</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
-        </div>
+        <div class="soon-grid" id="soon-grid" aria-label="준비 중인 도구"></div>
       </div>
     </section>
   </main>
@@ -104,6 +99,8 @@
 </div>
 <script src="../assets/js/shared.js"></script>
 <script>
+  // 곧 나와요 카드: 정식 기능 아이콘 (PRD §2.4)
+  document.getElementById("soon-grid").innerHTML = [["ladder", "사다리"], ["team", "팀나누기"], ["wheel", "돌림판"], ["seat", "자리배치"]].map(([i, n]) => `<div class="soon-card"><span class="ic">${featureIcon(i, 28)}</span><b>${n}</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>`).join("");
   // 데모 그리드 (장식용). 4행 × 3열, 3명이 순서대로 칠해지는 느낌
   const g = document.getElementById("demo"); let h = "<span class='ax'></span>" + ["수", "목", "금"].map((d) => `<span class='hd'>${d}</span>`).join(""), i = 0;
   const fill = { "0,0": 1, "0,1": 1, "1,0": 1, "1,1": 1, "2,2": 1, "3,0": 1, "3,1": 1, "3,2": 1 };

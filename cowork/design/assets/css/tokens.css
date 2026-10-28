@@ -1,7 +1,7 @@
 /* ==========================================================================
    Lomeone · Design Tokens  (LM-PRD-01 §7)
-   - 역할(토큰 이름)은 PRD §7.2 그대로. 값은 시안 제안값 (D-5 확정 전)
-   - 브랜드 색 2안: 기본 = A안 "민트 틸",  <html data-brand="b"> = B안 "코발트"
+   - 역할(토큰 이름)은 PRD §7.2 그대로. 브랜드 색은 D-5 확정(2026-10-29): 민트 틸 #0B7F70
+   - 코발트 B안은 assets/archive/brand-b.css 에 보관만 (미채택)
    - 다크: 시스템 설정(prefers-color-scheme) 또는 <html data-theme="dark|light">
    ========================================================================== */
 
@@ -25,7 +25,7 @@
   --gutter: 16px;
   --bar-h: 72px;
 
-  /* ---- light (A안: 민트 틸) ---- */
+  /* ---- light (민트 틸 확정) ---- */
   --bg: #FFFFFF;
   --bg-subtle: #F5F7F7;
   --surface: #FFFFFF;
@@ -78,13 +78,6 @@
   --grid-half-line: var(--border);
 }
 
-/* ---- B안: 코발트 ---- */
-:root[data-brand="b"] {
-  --accent: #2F55D4;        /* 흰 글자 6.2:1 */
-  --accent-hover: #2545B0;
-  --accent-subtle: #E8EEFF;
-  --accent-ink: #1E3A9E;
-}
 
 /* ---- dark ---- */
 @media (prefers-color-scheme: dark) {
@@ -105,9 +98,6 @@
     --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
     --heat-all-ring: #FFFFFF;
   }
-  :root[data-brand="b"]:not([data-theme="light"]) {
-    --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
-  }
 }
 :root[data-theme="dark"] {
   --bg: #0F1514; --bg-subtle: #172120; --surface: #1A2423; --surface-raised: #223130;
@@ -120,9 +110,6 @@
   --focus-ring: #7AA8FF; --scrim: rgba(0, 0, 0, .6);
   --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
   --heat-all-ring: #FFFFFF;
-}
-:root[data-theme="dark"][data-brand="b"] {
-  --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
 }
 
 /* 데스크톱 거터 (§7.1) */
