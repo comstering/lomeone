@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "bundle": "node scripts/check-bundle.mts",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit"
