@@ -13,8 +13,8 @@
 - 자세한 건 `CLAUDE.md`.
 
 ## 3. 현재 상태
-- 확정: DEV-1~4 (`DECISIONS.md`).
-- 미결: Q-1~8 (`OPEN-QUESTIONS.md`).
+- 확정: DEV-1~7 (`DECISIONS.md`).
+- 미결: Q-4~8 (Q-8은 비교표 제시, 답 대기) (`OPEN-QUESTIONS.md`).
 - 코드: 아직 없음. 기존 라이프커브 코드(`apps/`, `packages/`, `docs/lifecurve/`)는 아직 안 지웠다 (설계 확정 후 별도 PR로 삭제).
 - 기획서 읽음: `LM-PRD-00` §5~10 핵심, `LM-PRD-01`·`design/PROGRESS.md`·`DESIGN-SPEC.md` 목차까지. 디자인 시안 파일 본문은 구현 시점에 읽는다.
 
@@ -31,4 +31,5 @@
 ## 5. 로그 (최신이 위)
 | 날짜 | 내용 |
 | --- | --- |
+| 2026-10-28 | API 계약(OpenAPI)·직접 호출(CORS)·MSW 목 확정(DEV-5~7). Q-8 장단점 정리 |
 | 2026-10-28 | PRD·디자인 읽음. 스택 1차 합의(DEV-1~4). `cowork/develop` 인수인계 체계 생성 |
