@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>모임을 찾을 수 없어요 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+<div class="page">
+  <div data-header="compact"></div>
+  <main class="wrap narrow">
+    <!-- SCR-11: 막다른 길이 아니라 새 총무가 되는 입구. ?k=404 | expired | deleted -->
+    <div class="empty" style="padding-top:var(--s-16)">
+      <svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22" stroke-dasharray="4 6"/></svg>
+      <h1 class="t-h1" id="t">모임을 찾을 수 없어요</h1>
+      <p id="d">링크 주소가 맞는지 확인해 주세요</p>
+      <a class="btn primary lg" href="new.html" style="min-width:220px">새 약속 만들기</a>
+    </div>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script>
+  const K = { "404": ["모임을 찾을 수 없어요", "링크 주소가 맞는지 확인해 주세요"], expired: ["끝난 모임이에요", "모임 날짜가 지나 90일 뒤 자동으로 지워졌어요"], deleted: ["총무가 지운 모임이에요", ""] }[new URLSearchParams(location.search).get("k") || "404"];
+  document.getElementById("t").textContent = K[0]; document.getElementById("d").textContent = K[1]; document.getElementById("d").hidden = !K[1]; document.title = K[0] + " — 로미원";
+</script>
+</body>
+</html>

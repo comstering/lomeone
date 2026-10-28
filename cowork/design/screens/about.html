@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>소개 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* SCR-12 문서 템플릿: 본문 최대 680px, 목차(앵커), 시행일 */
+  .doc { max-width: 680px; margin-inline: auto; padding-block: var(--s-8) var(--s-16); }
+  .doc h1 { margin-bottom: 8px; } .doc h2 { margin: var(--s-8) 0 var(--s-3); } .doc p, .doc li { color: var(--text-muted); } .doc p + p { margin-top: var(--s-3); }
+  .toc { margin-top: var(--s-4); padding: var(--s-4); background: var(--bg-subtle); border-radius: var(--r-md); display: flex; flex-direction: column; gap: 2px; }
+  .toc a { min-height: 36px; display: flex; align-items: center; color: var(--accent-ink); font-weight: 600; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: var(--s-3); }
+  th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { background: var(--bg-subtle); font-weight: 700; color: var(--text); }
+  td { color: var(--text-muted); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="default"></div>
+  <main class="wrap">
+    <article class="doc" id="doc"></article>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script>
+  /* ?doc=privacy | terms | (없으면 소개). 본문은 레이아웃 확인용 샘플 — 법적 문구는 별도 확정 필요 */
+  const D = new URLSearchParams(location.search).get("doc"), el = document.getElementById("doc");
+  if (D === "privacy") {
+    document.title = "개인정보처리방침 — 로미원";
+    el.innerHTML = `<h1 class="t-h1">개인정보처리방침</h1><p class="t-caption">시행일 2026년 11월 1일 (샘플)</p>
+    <nav class="toc" aria-label="목차"><a href="#s1">1. 수집하는 항목</a><a href="#s2">2. 보관과 삭제</a><a href="#s3">3. 문의</a></nav>
+    <h2 class="t-h2" id="s1">1. 수집하는 항목</h2><p>로미원은 모임을 만들고 응답하는 데 꼭 필요한 정보만 받아요.</p>
+    <table><thead><tr><th>항목</th><th>이유</th><th>보관</th></tr></thead><tbody><tr><td>이름(별명 가능)</td><td>누가 응답했는지 보여주기 위해</td><td>모임 마지막 날짜 + 90일</td></tr><tr><td>가능한 시간</td><td>모두 되는 시간을 계산하기 위해</td><td>모임 마지막 날짜 + 90일</td></tr></tbody></table>
+    <h2 class="t-h2" id="s2">2. 보관과 삭제</h2><p>기한이 지나면 자동으로 지워져요.</p><h2 class="t-h2" id="s3">3. 문의</h2><p>hello@lomeone.com</p>`;
+  } else if (D === "terms") {
+    document.title = "이용약관 — 로미원";
+    el.innerHTML = `<h1 class="t-h1">이용약관</h1><p class="t-caption">시행일 2026년 11월 1일 (샘플)</p><nav class="toc"><a href="#a">제1조 목적</a></nav><h2 class="t-h2" id="a">제1조 목적</h2><p>이 약관은 로미원이 제공하는 서비스의 이용 조건을 정해요.</p>`;
+  } else {
+    el.innerHTML = `<h1 class="t-display" style="font-size:32px;line-height:40px">모임의 귀찮은 일을<br>링크 하나로</h1><p style="margin-top:16px">로미원은 단톡방 총무를 위한 도구예요. 시간 맞추기부터 시작해서, 사다리·팀나누기·돌림판·자리배치까지 모임에 필요한 일을 링크 하나로 끝내요.</p>
+    <h2 class="t-h2">지켜요</h2><ul style="padding-left:20px"><li>로그인 없이 쓸 수 있어요</li><li>링크를 아는 사람만 볼 수 있어요</li><li>이름과 가능한 시간만 받고, 기한이 지나면 지워요</li></ul>
+    <div style="margin-top:32px"><a class="btn primary lg" href="new.html">약속 잡기 시작</a></div>`;
+  }
+</script>
+</body>
+</html>

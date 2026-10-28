@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>브랜드·컴포넌트 시트 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  .sheet-page section { padding-block: var(--s-8); border-bottom: 1px solid var(--border); }
+  .sheet-page h2 { margin-bottom: var(--s-4); } .sheet-page h3 { font-size: 14px; color: var(--text-subtle); margin: var(--s-4) 0 var(--s-2); font-weight: 700; }
+  .sw { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--s-3); }
+  .sw div { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; font-size: 12px; background: var(--surface); }
+  .sw i { display: block; height: 44px; border-bottom: 1px solid var(--border); } .sw span { display: block; padding: 6px 8px; line-height: 16px; } .sw code { color: var(--text-subtle); }
+  .logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-4); }
+  .logo-card { border: 1px solid var(--border); border-radius: var(--r-lg); padding: var(--s-6); display: flex; flex-direction: column; gap: var(--s-4); align-items: flex-start; background: var(--surface); }
+  .logo-card.dark { background: #0F1514; color: #fff; border-color: #0F1514; }
+  .sizes { display: flex; align-items: end; gap: var(--s-4); }
+  .spec { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+  .lbl-state { font-size: 12px; color: var(--text-subtle); margin-bottom: 4px; }
+  .rowwrap { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; }
+  .switch { display: flex; gap: 8px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="page sheet-page">
+  <div data-header="default"></div>
+  <main class="wrap">
+    <section>
+      <h1 class="t-h1">브랜드 · 토큰 · 컴포넌트 시트</h1>
+      <p class="muted">PRD §2·§7·§8 기준 시안. 우측 상단 스위치로 브랜드 색 2안(D-5)과 라이트/다크를 바꿔 볼 수 있어요.</p>
+      <div class="switch" style="margin-top:var(--s-4)">
+        <button class="chip" onclick="lmPrefs('brand','a')">색 A안 · 민트 틸</button><button class="chip" onclick="lmPrefs('brand','b')">색 B안 · 코발트</button>
+        <button class="chip" onclick="lmPrefs('theme','light')">라이트</button><button class="chip" onclick="lmPrefs('theme','dark')">다크</button><button class="chip" onclick="lmPrefs('theme','auto')">시스템</button>
+      </div>
+    </section>
+
+    <section><h2 class="t-h1">1. 로고 (D-5 · 디자이너 제안 2안)</h2>
+      <div class="logos">
+        <div class="logo-card"><b>A안 · 겹친 두 원 (권장)</b><img src="../assets/logo/symbol-a.svg" width="96" height="96" alt=""><img src="../assets/logo/wordmark-lockup-a.svg" width="260" alt="lomeone 로미원"><p class="muted" style="font-size:14px">두 개의 <b>o</b>가 겹치는 자리가 "모두 되는 시간". 달력·시계를 쓰지 않아 2단계 도구로 확장해도 맞아요.</p></div>
+        <div class="logo-card"><b>B안 · 채워지는 칸</b><img src="../assets/logo/symbol-b.svg" width="96" height="96" alt=""><p class="muted" style="font-size:14px">시간 칸이 채워지고 한 칸이 "전원"이 되는 모양. 약속 기능과 직접 연결되지만 2단계 도구와는 덜 어울려요.</p></div>
+        <div class="logo-card dark"><b>다크 배경</b><div class="logo" style="color:#fff" id="dk"></div><p style="font-size:14px;opacity:.8">심볼은 다크에서 밝은 틴트 (--accent 다크값)</p></div>
+      </div>
+      <h3>크기 대응 (DAC-10)</h3>
+      <div class="sizes" id="sizes"></div>
+    </section>
+
+    <section><h2 class="t-h1">2. 색상 토큰 (§7.2)</h2><div class="sw" id="sw"></div>
+      <h3>히트맵 6단계 + 전원</h3><div class="legend" id="lg"></div></section>
+
+    <section><h2 class="t-h1">3. 타이포그래피 (§7.3 · Pretendard)</h2>
+      <div class="stack">
+        <div class="t-display">display · 모임의 귀찮은 일, 링크 하나로</div><div class="t-h1">h1 · 팀플 회의</div><div class="t-h2">h2 · 가장 좋은 시간</div>
+        <div class="t-confirm">confirm-xl · 오후 7:00 – 9:00</div><div class="t-body">body · 가능한 시간을 알려주세요 (16/24)</div><div class="t-label">label · 링크 만들기 (15/22 · 600)</div>
+        <div class="t-grid">grid · 10/29 수 · 19시 (12/16 · 500)</div><div class="t-caption">caption · 로그인 없이 · 무료 (13/18)</div>
+        <div class="t-body">숫자는 tabular-nums: 1111 · 8888 · 19:00–21:00 · 4/5명</div></div></section>
+
+    <section><h2 class="t-h1">4. 컴포넌트 · 상태 (§8 · §7.8)</h2>
+      <div class="spec">
+        <div><h3>C-03 Button</h3><div class="stack">
+          <div class="rowwrap"><button class="btn primary">primary</button><button class="btn primary" style="background:var(--accent-hover)">hover</button><button class="btn primary" disabled>disabled</button><button class="btn primary loading">로딩</button></div>
+          <div class="rowwrap"><button class="btn secondary">secondary</button><button class="btn ghost">ghost</button><button class="btn danger">danger</button></div>
+          <button class="btn kakao lg block">💬 카카오톡으로 보내기 (kakao)</button><button class="btn primary lg block">링크 만들기 (lg 52px)</button></div></div>
+        <div><h3>C-04 TextField</h3><div class="stack">
+          <div class="field"><label>이름 <span class="counter">3/20</span></label><input class="input" placeholder="예: 지원"><span class="hint">별명도 괜찮아요</span></div>
+          <div class="field"><label>이름</label><input class="input" value="민수" aria-invalid="true"><span class="err">이미 있는 이름이에요. 본인이면 이 이름으로 수정하기</span></div>
+          <div class="field"><label>이름</label><input class="input" value="가나다라마바사아자차카타파하가나다라" ><span class="hint">최장 20자 케이스</span></div></div></div>
+        <div><h3>C-22 StatusBadge · C-11 Chips</h3><div class="rowwrap"><span class="badge progress">응답 중</span><span class="badge confirmed">확정</span><span class="badge expired">만료</span><span class="badge admin">총무</span></div>
+          <div class="resp-chips" style="margin-top:12px"><span class="count">5명 응답</span><button class="chip" aria-pressed="false">지원</button><button class="chip" aria-pressed="true">민수</button><button class="chip">서연</button></div>
+          <h3>C-07 ModeSegmented</h3><div class="seg"><button aria-checked="true">날짜+시간</button><button aria-checked="false">날짜만</button></div></div>
+        <div><h3>C-10 BestTimeCard</h3><div class="stack" style="gap:8px">
+          <div class="best first"><span class="rank">1</span><span><span class="when">수 10/29 19:00–21:00</span><span class="who"><span class="all-badge">✓ 전원 가능</span>5/5명</span></span></div>
+          <div class="best"><span class="rank">2</span><span><span class="when">목 10/30 10:00–12:00</span><span class="who">4/5명 · <span class="miss">민수 빠짐</span></span></span></div></div></div>
+        <div><h3>C-21 Banner</h3><div class="stack" style="gap:8px"><div class="banner info" id="b1"></div><div class="banner warning" id="b2"></div><div class="banner error" id="b3"></div></div></div>
+        <div><h3>C-16 ConfirmedCard</h3><div class="confirmed"><span class="tag">🎉 확정됐어요</span><div class="name">팀플 회의</div><div class="date">10월 29일 수요일</div><div class="time t-confirm">오후 7:00 – 9:00</div><div class="count">5명 중 5명 가능</div></div></div>
+        <div><h3>C-25 DateOnlyChoice</h3><div class="date-choice"><div class="d">11월 8일 (토)</div><div class="opts"><button class="yes" aria-pressed="true">돼요</button><button class="maybe" aria-pressed="false">애매</button><button class="no" aria-pressed="false">안 돼요</button></div></div></div>
+        <div><h3>C-19 MeetListItem</h3><div class="stack" style="gap:8px"><div class="meet-item"><div class="top"><span class="name">팀플 회의</span><span class="badge progress">응답 중</span></div><div class="sub">10/29~31 · 3명 응답</div></div>
+          <div class="meet-item"><div class="top"><span class="name">금요일 저녁 팀플 최종 발표 준비 회의 시간 정하기 (2차)</span><span class="badge confirmed">확정</span></div><div class="sub">최장 이름 케이스 (말줄임)</div></div></div></div>
+        <div><h3>C-18 CreateCTA</h3><div class="create-cta"><div><b>우리 모임도 이걸로 정하기</b><p>링크 하나면 10초면 끝나요</p></div><button class="btn secondary">새 약속 만들기</button></div></div>
+      </div>
+      <h3>C-08 SlotGrid · input / heatmap</h3>
+      <div class="spec"><div><div class="lbl-state">input (칠하기: 눌러서 드래그해 보세요)</div><div id="gi"></div></div><div><div class="lbl-state">heatmap (칸을 탭하면 말풍선)</div><div id="gh"></div><div style="margin-top:8px" id="lg2"></div></div></div>
+    </section>
+
+    <section><h2 class="t-h1">5. 아이콘 (24px · 선 1.75px)</h2><div class="rowwrap" id="icons"></div>
+      <p class="muted" style="margin-top:12px">기능 아이콘 6종(약속·사다리·팀나누기·돌림판·자리배치·롤링페이퍼)은 같은 선 굵기·둥근 끝·2색(선 + --accent-subtle 채움) 원칙으로 2단계에서 확장 (제안만, 1단계는 약속만 사용).</p></section>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/grid.js"></script>
+<script>
+  const names = ["bg", "bg-subtle", "surface", "text", "text-muted", "text-subtle", "border", "border-strong", "accent", "accent-subtle", "accent-ink", "positive", "warning", "danger", "kakao-bg", "focus-ring"];
+  const paint = () => {
+    const cs = getComputedStyle(document.documentElement);
+    document.getElementById("sw").innerHTML = names.map((n) => `<div><i style="background:var(--${n})"></i><span><b>--${n}</b><br><code>${cs.getPropertyValue("--" + n).trim() || "—"}</code></span></div>`).join("");
+  };
+  paint(); new MutationObserver(paint).observe(document.documentElement, { attributes: true });
+  const lg = `<span>0명</span><span class="scale">${[0, 1, 2, 3, 4, 5].map((i) => `<i style="background:var(--heat-${i})"></i>`).join("")}</span><span>4명</span><span class="all"><i></i>전원 가능 (색 + 테두리 + 줄무늬)</span>`;
+  document.getElementById("lg").innerHTML = lg; document.getElementById("lg2").innerHTML = `<div class="legend">${lg}</div>`;
+  document.getElementById("dk").innerHTML = `${lmSymbol(28)}<span>lomeone</span>`;
+  document.getElementById("sizes").innerHTML = [16, 32, 48, 64].map((s) => `<div class="stack" style="gap:4px;align-items:center">${lmSymbol(s)}<span class="t-caption">${s}px</span></div>`).join("");
+  document.getElementById("b1").innerHTML = icon("info") + "<span>카카오톡 안에서는 일정 파일이 열리지 않을 수 있어요.</span>";
+  document.getElementById("b2").innerHTML = icon("warn") + "<span>모두 되는 시간은 없어요. 가장 많이 되는 시간이에요</span>";
+  document.getElementById("b3").innerHTML = icon("warn") + "<span>연결이 불안정해요. 입력한 내용은 그대로 있어요.</span><button class='btn secondary'>다시 보내기</button>";
+  document.getElementById("icons").innerHTML = ["back", "close", "share", "copy", "link", "key", "cal", "check", "pencil", "more", "user", "clock", "left", "right", "warn", "info", "trash"].map((n) => `<div class="stack" style="align-items:center;gap:4px;width:64px">${icon(n)}<span class="t-caption">${n}</span></div>`).join("");
+  LM.buildGrid(document.getElementById("gi"), { mode: "input", days: 3, from: 9, to: 14 });
+  LM.buildGrid(document.getElementById("gh"), { mode: "heatmap", days: 3, from: 17, to: 23 });
+  document.querySelectorAll(".slot-scroll").forEach((s) => (s.style.maxHeight = "320px"));
+  document.getElementById("gi").api.preset([[0, 10, 11.5], [1, 9, 10]]);
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OG·카카오 미리보기 템플릿 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* SCR-13 · SCR-14 : 서버에서 PNG로 렌더링할 템플릿. 이미지는 라이트 고정 → 토큰 대신 고정값 사용 */
+  .og { --a: #0B7F70; --ink: #075A4F; --soft: #E3F4F1; width: 1200px; height: 630px; position: relative; overflow: hidden; background: #fff; font-family: var(--font); color: #121817; border: 2px solid #E1E6E5; box-sizing: border-box; }
+  :root[data-brand="b"] .og { --a: #2F55D4; --ink: #1E3A9E; --soft: #E8EEFF; }
+  .og .bg { position: absolute; inset: 0; background: var(--soft); }
+  .og .bg svg { position: absolute; right: -260px; top: 50%; transform: translateY(-50%); width: 720px; height: 720px; opacity: .9; }
+  .og .brand { position: absolute; left: 72px; top: 56px; display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 40px; letter-spacing: -.03em; }
+  .og .brand small { font-size: 24px; font-weight: 600; color: #4A5654; letter-spacing: 0; }
+  .og .feat { position: absolute; right: 72px; top: 62px; font-size: 26px; font-weight: 700; color: var(--ink); }
+  /* 가운데 630×630 정사각형 안에 핵심 배치 (카톡 정사각 크롭 대응) */
+  .og .safe { position: absolute; left: 285px; width: 630px; top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 22px; padding-inline: 20px; box-sizing: border-box; }
+  .og .name { font-size: 84px; line-height: 96px; font-weight: 800; letter-spacing: -.04em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
+  .og .name.long { font-size: 60px; line-height: 70px; }
+  .og .stat { font-size: 36px; line-height: 46px; font-weight: 600; color: var(--ink); }
+  .og .pill { background: var(--a); color: #fff; padding: 8px 24px; border-radius: 99px; font-size: 32px; font-weight: 700; }
+  .og.confirmed-og .bg { background: var(--a); } .og.confirmed-og .name, .og.confirmed-og .brand, .og.confirmed-og .feat { color: #fff; } .og.confirmed-og .brand small { color: rgba(255,255,255,.8); }
+  .og.confirmed-og .pill { background: #fff; color: var(--ink); font-size: 38px; line-height: 46px; padding: 10px 28px; }
+  .og.confirmed-og .brand svg circle { stroke: #fff; } .og.confirmed-og .brand svg circle[fill]:not([fill=none]) { fill: #fff; }
+  .og.expired-og .bg { background: #F0F2F2; } .og.expired-og .name, .og.expired-og .stat { color: #66726F; } .og.expired-og .bg svg { opacity: .25; filter: grayscale(1); }
+  .frame { width: 600px; height: 315px; position: relative; overflow: hidden; border-radius: 8px; flex: none; }
+  .frame .og { transform: scale(.5); transform-origin: top left; }
+  .frame.sq { width: 315px; } .frame.sq .og { transform: scale(.5) translateX(-285px); }
+  .grid-og { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); }
+  .scroll-x { overflow-x: auto; }
+  .kfeed { width: 320px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; color: #191919; font-size: 14px; }
+  .kfeed .im { height: 160px; position: relative; overflow: hidden; } .kfeed .im .og { transform: scale(.267); transform-origin: top left; }
+  .kfeed .tx { padding: 12px 14px; } .kfeed .tx b { display: block; font-size: 15px; } .kfeed .tx span { color: #666; font-size: 13px; }
+  .kfeed .bt { border-top: 1px solid #eee; text-align: center; padding: 12px; font-weight: 700; font-size: 14px; background: #f9f9f9; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="default"></div>
+  <main class="wrap section stack-lg">
+    <div><h1 class="t-h1">SCR-13 카톡 미리보기 (OG) 4종 + SCR-14 카카오 피드 카드</h1><p class="muted">1200×630 · 이미지는 라이트 고정 · 핵심 정보는 가운데 정사각형(630×630) 안 · 폰트 Pretendard 굵기 2종(600/800)</p></div>
+
+    <div class="grid-og" id="ogs"></div>
+
+    <section class="stack"><h2 class="t-h2">텍스트 규칙: 모임 이름 최장(40자)</h2><p class="muted">1줄 약 14자 기준, 2줄까지 쓰고 말줄임. 긴 이름은 60px로 줄여요.</p>
+      <div class="scroll-x"><div class="frame"><div class="og" id="long"></div></div></div></section>
+
+    <section class="stack"><h2 class="t-h2">정사각형 크롭 (카톡이 잘라 보여줄 때)</h2>
+      <div class="row" style="gap:var(--s-4);flex-wrap:wrap"><div class="frame sq"><div class="og" id="sq1"></div></div><div class="frame sq"><div class="og" id="sq2"></div></div><div class="frame sq"><div class="og" id="sq3"></div></div></div></section>
+
+    <section class="stack"><h2 class="t-h2">SCR-14 카카오 피드 메시지 카드</h2><p class="muted">제목 "로미원 약속 · 팀플 회의" · 설명 "가능한 시간을 알려주세요 (3명 응답)" · 버튼 1개 (글자 수·버튼 수 제약은 D-4에서 확인)</p>
+      <div class="kfeed"><div class="im"><div class="og" id="kf"></div></div><div class="tx"><b>로미원 약속 · 팀플 회의</b><span>가능한 시간을 알려주세요 (3명 응답)</span></div><div class="bt">가능한 시간 알려주기</div></div></section>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script>
+  const art = `<svg viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="oc"><circle cx="11.5" cy="16" r="9"/></clipPath></defs><circle cx="11.5" cy="16" r="9" fill="none" stroke="var(--a)" stroke-width="1.5" opacity=".35"/><circle cx="20.5" cy="16" r="9" fill="none" stroke="var(--a)" stroke-width="1.5" opacity=".35"/><circle cx="20.5" cy="16" r="9" fill="var(--a)" clip-path="url(#oc)" opacity=".25"/></svg>`;
+  const og = (cls, name, stat, pill, long) => `<div class="bg">${art}</div><div class="brand">${lmSymbol(44)}lomeone <small>로미원</small></div><div class="feat">로미원 약속</div>
+    <div class="safe"><div class="name ${long ? "long" : ""}">${name}</div>${pill ? `<div class="pill">${pill}</div>` : ""}<div class="stat">${stat}</div></div>`;
+  const S = [["", "팀플 회의", "가능한 시간을 알려주세요", "", "응답 0명"], ["", "팀플 회의", "3명 응답 · 가능한 시간을 알려주세요", "", "응답 중"], ["confirmed-og", "팀플 회의", "", "10/29 (수) 19:00 확정", "확정"], ["expired-og", "팀플 회의", "끝난 모임이에요", "", "만료"]];
+  document.getElementById("ogs").innerHTML = S.map((s) => `<figure style="margin:0" class="stack"><div class="scroll-x"><div class="frame"><div class="og ${s[0]}">${og(s[0], s[1], s[2], s[3])}</div></div></div><figcaption class="t-label">${s[4]}</figcaption></figure>`).join("");
+  const set = (id, cls, ...a) => { const e = document.getElementById(id); e.className = "og " + cls; e.innerHTML = og(cls, ...a); };
+  set("long", "", "금요일 저녁 팀플 최종 발표 준비 회의 시간 정하기 (2차 수정본) 제발 응답", "3명 응답 · 가능한 시간을 알려주세요", "", true);
+  set("sq1", "", "팀플 회의", "가능한 시간을 알려주세요", ""); set("sq2", "confirmed-og", "팀플 회의", "", "10/29 (수) 19:00 확정"); set("sq3", "expired-og", "팀플 회의", "끝난 모임이에요", "");
+  set("kf", "", "팀플 회의", "3명 응답 · 가능한 시간을 알려주세요", "");
+</script>
+</body>
+</html>

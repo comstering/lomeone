@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>팀플 회의 — 로미원 약속</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* 모임 페이지 /m/[id] — 한 주소, 상태에 따라 화면이 바뀐다 (PRD §5.3)
+     ?v= name | paint | dateonly | result | result-one | result-none | admin | admin-empty | confirmed | confirmed-part | confirmed-changed | confirmed-admin | past
+     ?sheet= confirm | menu | delete | cal     ?days=8 (가로 넘김)   ?alt=b (D-8 B안)   ?inapp=1 (카톡 인앱 높이)   ?theme=dark  ?brand=b */
+  #app { padding-bottom: calc(var(--bar-h) + 24px); max-width: 1100px; }
+  #app[data-narrow] { max-width: 600px; }
+  .sec-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: var(--s-3); }
+  .task { padding-block: var(--s-2) var(--s-4); }
+  .task p { color: var(--text-muted); margin-top: 2px; }
+  .tools { display: flex; gap: var(--s-2); margin-bottom: var(--s-3); flex-wrap: wrap; }
+  .tools .btn { min-height: 40px; }
+  .who-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .who-chips .chip { min-height: 32px; font-size: 13px; padding: 0 12px; background: var(--bg-subtle); border-color: var(--border); }
+  .mini { padding: var(--s-4); }
+  @media (min-width: 1024px) {
+    #app { padding-bottom: var(--s-16); }
+    .split > aside { order: 2; }
+    .mobile-only-bar { display: none !important; }
+    #app:not([data-narrow]) .submit-bar { max-width: 360px; margin-left: auto; margin-top: var(--s-4); }
+  }
+  @media (max-width: 1023px) { .split.af > aside { order: -1; } }
+  .modal-btns { display: grid; gap: 8px; margin-top: 8px; }
+  .scroll-guard { touch-action: pan-y; }
+  .tabs-note { font-size: 12px; color: var(--text-subtle); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div id="hdr" data-header="back"></div>
+  <main class="wrap with-bar" id="app"></main>
+</div>
+<script>
+  /* 헤더 설정은 shared.js 가 실행되기 전에 */
+  const Q = new URLSearchParams(location.search), V = Q.get("v") || "result";
+  const hdr = document.getElementById("hdr");
+  const ICON_PATH = ""; // (icon()은 shared.js 로드 후 사용 가능 — 아래 렌더에서 처리)
+  const H = {
+    name: ["compact", ""], paint: ["back", "팀플 회의", "name"], dateonly: ["back", "팀플 회의", "name"],
+    result: ["back", "팀플 회의", "SHARE"], "result-one": ["back", "팀플 회의", "SHARE"], "result-none": ["back", "팀플 회의", "SHARE"],
+    admin: ["back", "팀플 회의", "ADMIN"], "admin-empty": ["back", "팀플 회의", "ADMIN"],
+    confirmed: ["compact", "", ""], "confirmed-part": ["compact", "", ""], "confirmed-changed": ["compact", "", ""], "confirmed-admin": ["compact", "", "MORE"], past: ["compact", "", ""],
+  }[V] || ["back", "팀플 회의", ""];
+  hdr.dataset.header = H[0]; hdr.dataset.title = H[1]; hdr.dataset.href = "m.html?v=" + (H[2] === "name" ? "name" : "name");
+</script>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/grid.js"></script>
+<script>
+(function () {
+  const app = document.getElementById("app"), days = +(Q.get("days") || 3);
+  const fixRight = () => {   // 헤더 우측 액션 (shared.js 가 만든 뒤 주입)
+    const nav = document.querySelector(".site-header nav"), t = document.querySelector(".site-header .title"); if (!nav) return;
+    const kind = { SHARE: "share", ADMIN: "admin", MORE: "more", name: "me" }[(({ result: "SHARE", "result-one": "SHARE", "result-none": "SHARE", admin: "ADMIN", "admin-empty": "ADMIN", "confirmed-admin": "MORE", paint: "name", dateonly: "name" })[V]) || ""] || "";
+    if (V === "paint" || V === "dateonly") nav.innerHTML = `<button class="link-btn" data-open="#sh-name" style="gap:4px">지원 ${icon("pencil")}</button>`;
+    if (kind === "share") nav.innerHTML = `<button class="icon-btn" data-copy="링크를 복사했어요" aria-label="공유">${icon("share")}</button><button class="icon-btn" data-open="#sh-menu" aria-label="더보기">${icon("more")}</button>`;
+    if (kind === "admin") { nav.innerHTML = `<span class="badge admin">총무</span><button class="icon-btn" data-open="#sh-menu" aria-label="더보기">${icon("more")}</button>`; }
+    if (kind === "more") nav.innerHTML = `<span class="badge admin">총무</span><button class="icon-btn" data-open="#sh-menu" aria-label="관리 메뉴">${icon("more")}</button>`;
+  };
+
+  /* ---------- 조각 ---------- */
+  const summary = (n, extra = "") => `<div class="summary"><h1 class="t-h1">팀플 회의</h1><div class="meta"><span>${icon("cal")}10월 29일(수) ~ 31일(금)</span><span>${icon("clock")}09:00 ~ 23:00</span><span>${icon("user")}${n}명 응답</span></div>${extra}</div>`;
+  const chips = (names) => `<div class="resp-chips" id="chips"><span class="count">${names.length}명 응답</span>${names.map((n) => `<button class="chip" aria-pressed="false" data-n="${n}">${n}</button>`).join("")}</div>`;
+  const best = (i, when, who, r, admin, all) => `<button class="best ${i === 1 ? "first" : ""}" aria-pressed="false" data-r="${r}"><span class="rank">${i}</span><span><span class="when">${when}</span><span class="who">${all ? `<span class="all-badge">${icon("check", "")}전원 가능</span>` : ""}${who}</span></span>${admin ? `<span class="cta btn ${i === 1 ? "primary" : "secondary"} block" role="button" data-open="#sh-confirm" data-when="${when}">이 시간으로 확정</span>` : ""}</button>`;
+  const cta = (t = "우리 모임도 이걸로 정하기") => `<div class="create-cta"><div><b>${t}</b><p>링크 하나면 10초면 끝나요</p></div><a class="btn secondary" href="new.html">새 약속 만들기</a></div>`;
+  const legend = (n) => `<div class="legend"><span>0명</span><span class="scale">${[0, 1, 2, 3, 4, 5].map((i) => `<i style="background:var(--heat-${i})"></i>`).join("")}</span><span>${n - 1}명</span><span class="all"><i></i>전원 가능</span></div>`;
+  const heat = (id) => `<div id="${id}"></div>`;
+  const BEST5 = (admin) => `${best(1, "수 10/29 19:00–21:00", "5/5명", "0,19,21", admin, true)}${best(2, "목 10/30 10:00–12:00", `4/5명 · <span class="miss">민수 빠짐</span>`, "1,10,12", admin)}${best(3, "금 10/31 19:00–20:00", `4/5명 · <span class="miss">서연 빠짐</span>`, "2,19,20", admin)}`;
+  const filter = `<div class="chips" role="group" aria-label="최소 길이" style="margin-top:var(--s-3)"><button class="chip" aria-pressed="true" data-f>1시간 이상</button><button class="chip" aria-pressed="false" data-f>2시간 이상</button></div>`;
+
+  /* ---------- 화면 ---------- */
+  const views = {
+    /* SCR-05 이름 입력 */
+    name: () => `${summary(3)}
+      <div class="task"><h2 class="t-h2">가능한 시간을 알려주세요</h2><p>이름만 쓰면 바로 시작해요</p></div>
+      <div class="who-chips" style="margin-bottom:var(--s-6)"><span class="t-caption">이미 응답한 사람</span><span class="chip">지원</span><span class="chip">민수</span><span class="chip">서연</span></div>
+      <div class="field"><label for="nm">이름 <span class="counter" id="nc" hidden></span></label>
+        <input class="input" id="nm" maxlength="20" placeholder="예: 지원" autocomplete="off"><span class="hint" id="nh">별명도 괜찮아요</span>
+        <span class="err" id="ne" hidden>이미 있는 이름이에요. 본인이면 <a href="m.html?v=paint" style="text-decoration:underline;font-weight:700">이 이름으로 수정하기</a></span></div>
+      <div class="submit-bar"><div class="inner"><a class="btn primary lg block" id="go" href="m.html?v=${Q.get("mode") === "date" ? "dateonly" : "paint"}" aria-disabled="true">시간 고르기</a><span class="trust">로그인 없이 · 30초면 끝</span></div></div>`,
+
+    /* SCR-06 시간 칠하기 */
+    paint: () => `<div class="split"><div>
+      <div class="task"><h2 class="t-h2">되는 시간을 칠해 주세요</h2></div>
+      <div class="tools"><button class="btn secondary" id="all">전부 가능</button><button class="btn secondary" aria-pressed="false" id="oth">다른 사람 보기</button>
+        ${Q.get("alt") === "b" ? `<button class="btn secondary paint-toggle" aria-pressed="true" id="pt">${icon("pencil")} 칠하기 모드</button>` : ""}</div>
+      <div style="position:relative">${heat("g")}<div class="coach" id="coach" ${Q.get("coach") === "0" ? "hidden" : ""}><div class="finger"></div><b>누른 채로 쭉 내리면 한 번에 칠해져요</b></div></div>
+      <p class="tabs-note" style="margin-top:8px">${Q.get("alt") === "b" ? "칠하기 모드를 끄면 어디서나 스크롤돼요 (D-8 B안)" : "시간 숫자가 있는 왼쪽 줄을 밀면 스크롤돼요 (D-8 A안)"}</p></div>
+      <aside class="only-desktop"><div class="card mini stack"><b class="t-h2">지금까지 응답</b><p class="muted">3명이 응답했어요</p><div class="best first" style="pointer-events:none"><span class="rank">1</span><span><span class="when">수 19:00–21:00</span><span class="who">3/3명</span></span></div></div></aside></div>
+      <div class="submit-bar mobile-only-bar" id="bar"><div class="inner split"><span class="sum" id="sum">선택 <b>0</b>시간</span><button class="btn primary lg" id="go">되는 시간 없이 제출</button></div></div>`,
+
+    /* SCR-06b 날짜만 */
+    dateonly: () => `<div class="task"><h2 class="t-h2">되는 날을 골라 주세요</h2></div><div class="stack" id="dl">
+      ${["11월 8일 (토)", "11월 9일 (일)", "11월 15일 (토)", "11월 16일 (일)", "11월 22일 (토)", "11월 23일 (일)"].map((d, i) => `<div class="date-choice"><div class="d">${d}</div><div class="opts"><button class="yes" aria-pressed="${i === 0}">돼요</button><button class="maybe" aria-pressed="${i === 2}">애매</button><button class="no" aria-pressed="false">안 돼요</button></div></div>`).join("")}</div>
+      <div class="submit-bar"><div class="inner split"><span class="sum" id="sum"><b>1</b>일 돼요</span><button class="btn primary lg" id="go">응답 제출</button></div></div>`,
+
+    /* SCR-07 결과 (기본) */
+    result: () => `<div class="only-mobile">${summary(5)}</div><div class="split af" style="margin-top:var(--s-4)">
+      <div class="stack-lg"><section><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${legend(5)}<div style="margin-top:var(--s-3)">${heat("g")}</div></section></div>
+      <aside class="stack-lg"><div class="only-desktop">${summary(5)}</div>${chips(Object.keys(LM.PEOPLE))}
+        <section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="stack" style="gap:var(--s-2)">${BEST5(false)}</div>${filter}</section>${cta()}</aside></div>
+      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+
+    "result-one": () => `${summary(1)}<div class="split af"><div>${legend(1)}<div style="margin-top:12px">${heat("g")}</div></div><aside class="stack-lg">${chips(["지원"])}
+      <section class="card stack" style="text-align:center;align-items:center;padding:var(--s-8) var(--s-4)"><p class="t-label">아직 1명만 응답했어요.<br>단톡방에 한 번 더 알려 볼까요?</p><button class="btn kakao lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 공유</button></section></aside></div>
+      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+
+    "result-none": () => `${summary(3)}<div class="split af"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${legend(3)}<div style="margin-top:12px">${heat("g")}</div></div><aside class="stack-lg">${chips(["지원", "민수", "서연"])}
+      <section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="banner warning" style="margin-bottom:var(--s-3)">${icon("info")}<span>모두 되는 시간은 없어요. 가장 많이 되는 시간이에요</span></div>
+      <div class="stack" style="gap:var(--s-2)">${best(1, "수 10/29 19:00–21:00", `2/3명 · <span class="miss">서연 빠짐</span>`, "0,19,21")}${best(1, "목 10/30 10:00–12:00", `2/3명 · <span class="miss">민수 빠짐</span>`, "1,10,12")}<p class="t-caption">같은 인원이라 둘 다 1위로 보여줘요</p></div></section>${cta()}</aside></div>
+      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+
+    /* SCR-08 총무 */
+    admin: () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div><p class="t-caption" style="margin-bottom:8px">칸을 길게 눌러 직접 시간을 골라 확정할 수도 있어요</p>${legend(3)}<div style="margin-top:12px">${heat("g")}</div></div>
+      <aside class="stack-lg"><div><h1 class="t-h1">3명 응답했어요</h1><div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div></div>
+      <section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="stack" style="gap:var(--s-2)">
+        ${best(1, "수 10/29 19:00–21:00", "3/3명", "0,19,21", true, true)}${best(2, "목 10/30 10:00–12:00", `2/3명 · <span class="miss">민수 빠짐</span>`, "1,10,12", true)}</div></section></aside></div>
+      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a></div></div>`,
+
+    "admin-empty": () => `<div class="empty" style="padding-top:var(--s-16)"><svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22"/><path d="M44 28a22 22 0 0 1 0 32 22 22 0 0 1 0-32z" fill="currentColor" stroke="none" opacity=".25"/></svg>
+      <h1 class="t-h1">아직 응답이 없어요</h1><p>단톡방에 링크를 보내면 응답이 하나씩 모여요</p>
+      <button class="btn kakao lg" style="width:100%;max-width:320px" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 카카오톡으로 보내기</button><button class="btn secondary" data-copy="링크를 복사했어요">링크 복사</button></div>
+      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a></div></div>`,
+
+    /* SCR-09 확정 */
+    confirmed: (o = {}) => `<div class="narrow" style="margin:var(--s-6) auto 0"><div class="stack-lg">
+      ${o.past ? "" : ""}
+      <div class="confirmed ${o.past ? "past" : ""}" id="cc"><div class="confetti" id="cf"></div>
+        ${o.changed ? `<div class="changed">시간이 바뀌었어요 (이전: 목 10:00)</div>` : ""}
+        <span class="tag">${o.past ? "지난 모임이에요" : "🎉 확정됐어요"}</span><div class="name">팀플 회의</div><div class="date">10월 29일 수요일</div><div class="time t-confirm">오후 7:00 – 9:00</div>
+        <div class="count">${o.part ? "4명 가능 · 민수 불가" : "5명 중 5명 가능"}</div></div>
+      <div class="stack" style="gap:var(--s-2)"><button class="btn primary lg block" data-open="#sh-cal">${icon("cal")} 캘린더에 추가</button>
+        <button class="btn ${o.admin ? "kakao" : "secondary"} lg block" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 알리기</button></div>
+      <p class="t-caption" style="text-align:center">응답 수정은 총무에게 요청하세요</p>
+      <details class="card"><summary class="t-label" style="cursor:pointer;min-height:32px;display:flex;align-items:center">응답 결과 보기</summary><div style="margin-top:12px">${legend(5)}<div style="margin-top:12px">${heat("g")}</div></div></details>
+      ${cta(o.past ? "다음 모임도 로미원으로" : "다음 모임도 로미원으로")}</div></div>`,
+  };
+  views["confirmed-part"] = () => views.confirmed({ part: 1 });
+  views["confirmed-changed"] = () => views.confirmed({ changed: 1 });
+  views["confirmed-admin"] = () => views.confirmed({ admin: 1 });
+  views.past = () => views.confirmed({ past: 1 });
+
+  if (V === "name" || V === "dateonly" || V === "admin-empty" || V.startsWith("confirmed") || V === "past") app.dataset.narrow = "1";
+  app.innerHTML = (views[V] || views.result)();
+  fixRight();
+
+  /* ---------- 시트들 (C-15) ---------- */
+  const sheets = `
+  <div class="sheet" id="sh-confirm" role="dialog" aria-modal="true" aria-labelledby="c-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="c-t">수 10/29 19:00–21:00로 확정할까요?</h2><p class="muted" id="c-s">3명 중 3명 가능</p><div class="modal-btns"><a class="btn primary lg" href="m.html?v=confirmed-admin">확정하기</a><button class="btn ghost" data-close>취소</button></div></div></div>
+  <div class="sheet" id="sh-menu" role="dialog" aria-modal="true" aria-label="메뉴"><div class="handle"></div><div class="menu">
+    ${V === "confirmed-admin" ? `<button data-toast="확정을 취소했어요">${icon("back")} 확정 취소</button>` : ""}
+    ${V.startsWith("result") ? `<button data-copy="링크를 복사했어요">${icon("link")} 링크 복사</button>` : `<button data-toast="모임 수정 화면으로 이동해요">${icon("pencil")} 모임 수정 (이름·날짜 추가)</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`}
+    <button data-close>닫기</button></div></div>
+  <div class="sheet" id="sh-del" role="alertdialog" aria-modal="true" aria-labelledby="d-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="d-t">모임을 삭제할까요?</h2><p class="muted">삭제하면 응답이 모두 지워지고 되돌릴 수 없어요.</p><div class="modal-btns"><button class="btn danger lg" data-toast="삭제했어요">삭제하기</button><button class="btn ghost" data-close>취소</button></div></div></div>
+  <div class="sheet" id="sh-cal" role="dialog" aria-modal="true" aria-label="캘린더에 추가"><div class="handle"></div><div class="menu"><button data-toast="일정 파일(.ics)을 내려받아요">${icon("cal")} 기본 캘린더 (.ics)</button><button data-toast="구글 캘린더가 열려요">${icon("cal")} 구글 캘린더</button>
+    <div class="banner info" style="margin-top:12px">${icon("info")}<span>카카오톡 안에서는 일정 파일이 열리지 않을 수 있어요. 열리지 않으면 ⋯ → 다른 브라우저로 열기를 눌러 주세요.</span></div></div></div>
+  <div class="sheet" id="sh-name" role="dialog" aria-modal="true" aria-labelledby="n-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="n-t">이름 수정</h2><div class="field"><label for="n2">이름</label><input class="input" id="n2" value="지원" maxlength="20"></div><div class="modal-btns"><button class="btn primary lg" data-close>저장</button></div></div></div>`;
+  document.body.insertAdjacentHTML("beforeend", sheets);
+
+  /* ---------- 동작 ---------- */
+  const $ = (s) => document.querySelector(s);
+  // 확정 시트 문구 (총무가 누른 카드에 따라)
+  document.addEventListener("click", (e) => { const b = e.target.closest("[data-when]"); if (b) { $("#c-t").textContent = b.dataset.when + "로 확정할까요?"; $("#c-s").textContent = V === "admin" ? (b.dataset.when.startsWith("수") ? "3명 중 3명 가능" : "3명 중 2명 가능") : ""; e.stopPropagation(); } }, true);
+
+  if (V === "name") {
+    const nm = $("#nm"), go = $("#go");
+    nm.addEventListener("input", () => {
+      const v = nm.value.trim(), dup = ["지원", "민수", "서연"].includes(v), l = nm.value.length;
+      $("#nc").hidden = l < 15; $("#nc").textContent = l + "/20"; $("#ne").hidden = !dup; $("#nh").hidden = dup; nm.setAttribute("aria-invalid", dup);
+      go.setAttribute("aria-disabled", !v || dup);
+    });
+    go.addEventListener("click", (e) => { if (go.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+  }
+
+  const g = $("#g");
+  if (V === "paint" && g) {
+    LM.buildGrid(g, { mode: "input", days, from: 9, to: 23 });
+    const upd = () => { const n = g.api.count(), h = n / 2; $("#sum").innerHTML = `선택 <b>${h}</b>시간`; $("#go").textContent = n ? "응답 제출" : "되는 시간 없이 제출"; };
+    g.addEventListener("slotchange", upd);
+    $("#coach").addEventListener("pointerdown", (e) => { e.currentTarget.hidden = true; });
+    let all = false; $("#all").addEventListener("click", (e) => { all = !all; g.api.fillAll(all); e.currentTarget.textContent = all ? "전부 지우기" : "전부 가능"; });
+    $("#oth").addEventListener("click", (e) => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", on); g.classList.toggle("show-others", on); });
+    if (Q.get("filled") !== "0") g.api.preset([[0, 19, 21], [2, 19, 21], [1, 10, 12]]);   // 일부 칠함 상태가 기본 (빈 상태: ?filled=0)
+    if (Q.get("filled") === "0") upd();
+    const pt = $("#pt"); if (pt) pt.addEventListener("click", () => { const on = pt.getAttribute("aria-pressed") !== "true"; pt.setAttribute("aria-pressed", on); g.classList.toggle("paint-off", !on); });
+    $("#go").addEventListener("click", (e) => { const b = e.currentTarget; b.classList.add("loading"); setTimeout(() => { location.href = "m.html?v=result&toast=1"; }, 700); });
+  }
+  if (V === "dateonly") {
+    app.addEventListener("click", (e) => {
+      const b = e.target.closest(".opts button"); if (!b) return; b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+      $("#sum").innerHTML = `<b>${app.querySelectorAll(".yes[aria-pressed=true]").length}</b>일 돼요`;
+    });
+    $("#go").addEventListener("click", () => (location.href = "m.html?v=result&toast=1"));
+  }
+  if (g && V.startsWith("result") || V === "admin" || V.startsWith("confirmed") || V === "past") {
+    const data = V === "result-none" ? { 지원: [[[19, 21]], [[10, 12]], []], 민수: [[[19, 21]], [], []], 서연: [[], [[10, 12]], []] } : V === "result-one" ? { 지원: LM.PEOPLE.지원 } : V === "admin" ? { 지원: LM.PEOPLE.지원, 서연: LM.PEOPLE.서연, 하준: LM.PEOPLE.하준 } : undefined;
+    if (g) LM.buildGrid(g, { mode: "heatmap", days: 3, from: 9, to: 23, data });
+    const chipsEl = $("#chips"); if (chipsEl) chipsEl.addEventListener("click", (e) => {
+      const c = e.target.closest(".chip"); if (!c) return; const on = c.getAttribute("aria-pressed") !== "true";
+      chipsEl.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", "false")); c.setAttribute("aria-pressed", on); g.api.person(on ? c.dataset.n : null);
+    });
+    app.addEventListener("click", (e) => {
+      const b = e.target.closest(".best"); if (!b || e.target.closest("[data-open]")) return; const on = b.getAttribute("aria-pressed") !== "true";
+      app.querySelectorAll(".best").forEach((x) => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", on);
+      const [d, a, z] = b.dataset.r.split(",").map(Number); g.api.range(on ? d : null, a, z);
+    });
+    app.querySelectorAll("[data-f]").forEach((f) => f.addEventListener("click", () => { app.querySelectorAll("[data-f]").forEach((x) => x.setAttribute("aria-pressed", x === f)); toast("최소 길이 " + f.textContent + "으로 다시 계산했어요"); }));
+  }
+  if (V.startsWith("confirmed") || V === "past") { if (V !== "past") confetti($("#cf")); }
+  if (Q.get("toast")) setTimeout(() => toast("응답을 보냈어요"), 250);
+  if (Q.get("sheet")) setTimeout(() => openSheet({ confirm: "#sh-confirm", menu: "#sh-menu", delete: "#sh-del", cal: "#sh-cal" }[Q.get("sheet")] || ""), 150);
+  if (Q.get("sheet") === "confirm") { $("#c-t").textContent = "수 10/29 19:00–21:00로 확정할까요?"; $("#c-s").textContent = "3명 중 3명 가능"; }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내 모임 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+</head>
+<body>
+<div class="page">
+  <div data-header="default"></div>
+  <main class="wrap narrow section stack-lg">
+    <div><h1 class="t-h1">내 모임</h1><p class="muted" style="margin-top:4px">이 기기에 저장된 모임이에요</p></div>
+    <div class="seg" role="tablist" id="tabs"><button role="tab" aria-checked="true" data-t="mine">만든 모임</button><button role="tab" aria-checked="false" data-t="joined">응답한 모임</button></div>
+    <div class="stack" id="list"></div>
+    <a class="btn primary lg block" href="new.html" id="new">새 약속 만들기</a>
+    <p class="t-caption" style="text-align:center" id="note">다른 기기에서 만든 모임은 총무 링크로 열어 주세요</p>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script>
+  /* ?empty=1 → 빈 상태 */
+  const Q = new URLSearchParams(location.search), L = document.getElementById("list");
+  const item = (n, sub, st, cls, href) => `<a class="meet-item ${cls || ""}" href="${href}"><div class="top"><span class="name">${n}</span><span class="badge ${st[0]}">${st[1]}</span></div><div class="sub">${sub}</div></a>`;
+  const data = {
+    mine: [item("팀플 회의", "10/29~31 · 3명 응답", ["progress", "응답 중"], "", "m.html?v=admin"), item("동아리 정기모임", "11/4 (화) 19:00", ["confirmed", "확정"], "", "m.html?v=confirmed-admin"), item("작년 송년회", "기한 지남", ["expired", "만료"], "expired", "gone.html?k=expired")],
+    joined: [item("스터디 시간 맞추기", "11/2 · 5명 응답", ["progress", "응답 중"], "", "m.html?v=result"), item("친구들 여행", "12/6 (토) 확정", ["confirmed", "확정"], "", "m.html?v=confirmed")],
+  };
+  function draw(t) {
+    const rows = Q.get("empty") ? [] : data[t];
+    L.innerHTML = rows.length ? rows.join("") : `<div class="empty"><svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22"/></svg><h2 class="t-h2">아직 ${t === "mine" ? "만든" : "응답한"} 모임이 없어요</h2><p>${t === "mine" ? "링크를 만들어 단톡방에 보내 보세요" : "받은 링크로 응답하면 여기에 모여요"}</p>${t === "mine" ? '<a class="btn primary" href="new.html">약속 만들기</a>' : ""}</div>`;
+    if (Q.get("empty")) { document.getElementById("new").hidden = true; }
+  }
+  document.getElementById("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#tabs button").forEach((x) => x.setAttribute("aria-checked", x === b)); draw(b.dataset.t); });
+  draw("mine");
+</script>
+</body>
+</html>

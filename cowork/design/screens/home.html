@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>로미원 — 모임의 귀찮은 일, 링크 하나로</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* SCR-01 전용 */
+  .hero { padding-block: var(--s-8) var(--s-12); display: grid; gap: var(--s-6); }
+  .hero .copy { display: flex; flex-direction: column; gap: var(--s-4); }
+  .hero .sub { color: var(--text-muted); font-size: 17px; line-height: 26px; }
+  .hero .cta { display: flex; flex-direction: column; gap: 8px; }
+  .hero .trust { color: var(--text-subtle); font-size: 14px; text-align: center; }
+  .demo { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--s-4); }
+  .demo .bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-3); font-weight: 700; font-size: 14px; }
+  .demo .grid { display: grid; grid-template-columns: 32px repeat(3, 1fr); gap: 3px; }
+  .demo .grid span { height: 22px; border-radius: 4px; background: var(--heat-0); border: 1px solid var(--border); }
+  .demo .grid .ax { background: none; border: 0; font-size: 11px; color: var(--text-subtle); text-align: right; padding-right: 4px; line-height: 22px; }
+  .demo .grid .hd { background: none; border: 0; height: auto; text-align: center; font-size: 12px; font-weight: 700; padding-bottom: 2px; }
+  .demo .grid span.f { animation: fill 4s ease-out 1 forwards; animation-delay: calc(var(--i) * 140ms); }
+  .demo .grid span.all { animation: fillall 4s ease-out 1 forwards; animation-delay: calc(var(--i) * 140ms); }
+  @keyframes fill { 0%, 10% { background: var(--heat-0); } 100% { background: var(--heat-3); } }
+  @keyframes fillall { 0%, 10% { background: var(--heat-0); } 70% { background: var(--heat-4); } 100% { background: var(--heat-all); box-shadow: inset 0 0 0 2px var(--heat-all-ring); } }
+  .demo .result { margin-top: var(--s-3); background: var(--surface); border: 2px solid var(--accent); border-radius: var(--r-md); padding: 10px 14px; font-weight: 700; opacity: 0; animation: pop 4s ease-out 1 forwards; }
+  .demo .result small { display: block; color: var(--accent-ink); font-weight: 600; font-size: 13px; }
+  @keyframes pop { 0%, 78% { opacity: 0; transform: translateY(6px); } 100% { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .demo .grid span.f { background: var(--heat-3); } .demo .grid span.all { background: var(--heat-all); box-shadow: inset 0 0 0 2px var(--heat-all-ring); } .demo .result { opacity: 1; } }
+  .soon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+  .soon-card { padding: var(--s-4); border: 1px dashed var(--border-strong); border-radius: var(--r-lg); opacity: .6; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+  .soon-card .ic { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-subtle); display: grid; place-items: center; font-size: 18px; }
+  .soon-card b { font-size: 15px; }
+  @media (min-width: 1024px) {
+    .hero { grid-template-columns: 1.1fr 1fr; align-items: center; padding-block: var(--s-16); gap: var(--s-12); }
+    .hero .cta { flex-direction: row; align-items: center; gap: var(--s-4); }
+    .hero .trust { text-align: left; }
+    .soon-grid { grid-template-columns: repeat(4, 1fr); }
+    .demo { padding: var(--s-6); }
+    .demo .grid span { height: 30px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="default"></div>
+  <main>
+    <!-- 히어로 -->
+    <section class="wrap hero">
+      <div class="copy">
+        <h1 class="t-display">모임의 귀찮은 일,<br>링크 하나로</h1>
+        <p class="sub">가능한 시간만 칠하면 모두 되는 시간이 나와요</p>
+        <div class="cta">
+          <a class="btn primary lg" href="new.html">약속 잡기 시작</a>
+          <span class="trust">로그인 없이 · 무료</span>
+        </div>
+      </div>
+      <!-- C-28 HeroDemo : CSS 애니메이션 1회 재생 (D-9 기본안). reduced-motion이면 완성 상태 -->
+      <div class="demo" role="img" aria-label="세 사람이 가능한 시간을 칠하면 수요일 19시에 3명 전원 가능이 표시되는 데모">
+        <div class="bar"><span>팀플 회의</span><span class="badge progress">응답 중</span></div>
+        <div class="grid" id="demo"></div>
+        <div class="result"><small>가장 좋은 시간</small>수 19:00 · 3/3명 전원 가능</div>
+      </div>
+    </section>
+
+    <!-- 이렇게 써요 C-27 -->
+    <section class="section subtle">
+      <div class="wrap stack-lg">
+        <h2 class="t-h1">이렇게 써요</h2>
+        <ol class="how">
+          <li><span class="n">1</span><div><b>만들고</b><span>날짜만 탭하면 링크가 만들어져요</span></div></li>
+          <li><span class="n">2</span><div><b>단톡방에 보내요</b><span>링크를 누르면 이름만 쓰고 시간을 칠해요</span></div></li>
+          <li><span class="n">3</span><div><b>정해져요</b><span>모두 되는 시간이 글자로 바로 나와요</span></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 이런 모임에 -->
+    <section class="section">
+      <div class="wrap stack">
+        <h2 class="t-h1">이런 모임에</h2>
+        <div class="chips wrap-chips">
+          <a class="chip" href="meet.html?for=team-project">팀플</a><a class="chip" href="meet.html?for=club">동아리</a><a class="chip" href="meet.html?for=dinner">회식</a>
+          <a class="chip" href="meet.html?for=reunion">동창회</a><a class="chip" href="meet.html?for=study">스터디</a><a class="chip" href="meet.html?for=trip">여행</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 곧 나와요 (D-11 기본안: 홈에만 흐리게) -->
+    <section class="section subtle" id="soon">
+      <div class="wrap stack">
+        <h2 class="t-h1">곧 나와요</h2>
+        <div class="soon-grid" aria-label="준비 중인 도구">
+          <div class="soon-card"><span class="ic">🪜</span><b>사다리</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
+          <div class="soon-card"><span class="ic">👥</span><b>팀나누기</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
+          <div class="soon-card"><span class="ic">🎡</span><b>돌림판</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
+          <div class="soon-card"><span class="ic">🪑</span><b>자리배치</b><span class="badge expired" style="align-self:flex-start">준비 중</span></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script>
+  // 데모 그리드 (장식용). 4행 × 3열, 3명이 순서대로 칠해지는 느낌
+  const g = document.getElementById("demo"); let h = "<span class='ax'></span>" + ["수", "목", "금"].map((d) => `<span class='hd'>${d}</span>`).join(""), i = 0;
+  const fill = { "0,0": 1, "0,1": 1, "1,0": 1, "1,1": 1, "2,2": 1, "3,0": 1, "3,1": 1, "3,2": 1 };
+  for (let r = 0; r < 6; r++) { h += `<span class='ax'>${r % 2 ? "" : 17 + r / 2 * 2 - (r ? 0 : 0) + "시"}</span>`;
+    for (let c = 0; c < 3; c++) { const all = c === 0 && (r === 3 || r === 4); const f = all || (c === 0 && r === 2) || (c === 1 && r === 1) || (c === 2 && (r === 4 || r === 5));
+      h += `<span class='${all ? "all" : f ? "f" : ""}' style='--i:${i++}'></span>`; } }
+  g.innerHTML = h;
+</script>
+</body>
+</html>
