@@ -6,6 +6,7 @@
    ========================================================================== */
 
 :root {
+  color-scheme: light;
   /* font */
   --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
 
@@ -49,6 +50,7 @@
   --warning-subtle: #FFF1D6;
   --danger: #C62828;
   --danger-subtle: #FDE8E8;
+  --danger-fg: #FFFFFF;
 
   --kakao-bg: #FEE500;
   --kakao-fg: #191919;
@@ -60,7 +62,7 @@
 
   /* heat: --accent 한 색의 농도 단계 (0명 → 전원 직전) */
   --heat-0: var(--bg-subtle);
-  --heat-1: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --heat-1: color-mix(in srgb, var(--accent) 20%, var(--surface));
   --heat-2: color-mix(in srgb, var(--accent) 32%, var(--surface));
   --heat-3: color-mix(in srgb, var(--accent) 50%, var(--surface));
   --heat-4: color-mix(in srgb, var(--accent) 70%, var(--surface));
@@ -98,7 +100,7 @@
     --accent: #3FCBB6; --accent-hover: #5AD8C5; --accent-fg: #06201C; --accent-subtle: #17403B; --accent-ink: #8FE9DA;
     --positive: #5FD07F; --positive-subtle: #17341F;
     --warning: #F2B550; --warning-subtle: #3B2B0D;
-    --danger: #FF8A80; --danger-subtle: #3E1B1B;
+    --danger: #FF8A80; --danger-subtle: #3E1B1B; --danger-fg: #3A0D0D;
     --focus-ring: #7AA8FF; --scrim: rgba(0, 0, 0, .6);
     --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
     --heat-all-ring: #FFFFFF;
@@ -114,7 +116,7 @@
   --accent: #3FCBB6; --accent-hover: #5AD8C5; --accent-fg: #06201C; --accent-subtle: #17403B; --accent-ink: #8FE9DA;
   --positive: #5FD07F; --positive-subtle: #17341F;
   --warning: #F2B550; --warning-subtle: #3B2B0D;
-  --danger: #FF8A80; --danger-subtle: #3E1B1B;
+  --danger: #FF8A80; --danger-subtle: #3E1B1B; --danger-fg: #3A0D0D;
   --focus-ring: #7AA8FF; --scrim: rgba(0, 0, 0, .6);
   --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
   --heat-all-ring: #FFFFFF;

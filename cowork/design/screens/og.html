@@ -29,7 +29,8 @@
   .frame { width: 600px; height: 315px; position: relative; overflow: hidden; border-radius: 8px; flex: none; }
   .frame .og { transform: scale(.5); transform-origin: top left; }
   .frame.sq { width: 315px; } .frame.sq .og { transform: scale(.5) translateX(-285px); }
-  .grid-og { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(600px, 1fr)); }
+  .grid-og > * { min-width: 0; }
+  .grid-og { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fill, minmax(min(600px, 100%), 1fr)); }
   .scroll-x { overflow-x: auto; }
   .kfeed { width: 320px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: #fff; color: #191919; font-size: 14px; }
   .kfeed .im { height: 160px; position: relative; overflow: hidden; } .kfeed .im .og { transform: scale(.267); transform-origin: top left; }
