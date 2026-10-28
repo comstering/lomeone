@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>약속 만들기 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* 하단 고정 버튼 영역 확보 */
+  main { padding-block: var(--s-6) calc(var(--bar-h) + 24px); }
+  @media (min-width: 1024px) { main { padding-bottom: var(--s-16); } .submit-bar { margin-top: var(--s-6); } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="back" data-title="약속 만들기" data-href="home.html"></div>
+  <main class="wrap narrow">
+    <div id="form"></div>
+  </main>
+  <div class="only-desktop" data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/create.js"></script>
+<script>
+  /* ?state=net  → 네트워크 실패 배너 상태 미리보기 */
+  const f = document.getElementById("form");
+  createForm(f, { name: "우리 모임" });
+  mountShareSheet();
+  f.addEventListener("created", (e) => {
+    if (new URLSearchParams(location.search).get("state") === "net") { document.getElementById("neterr").hidden = false; return; }
+    document.getElementById("sh-n").textContent = e.detail.name + " · " + e.detail.n + "일 선택";
+    document.getElementById("og-n").textContent = e.detail.name;
+    openSheet("#share");
+  });
+  /* 공유 시트를 바로 보고 싶을 때: ?sheet=1 */
+  if (new URLSearchParams(location.search).get("sheet")) {
+    document.getElementById("sh-n").textContent = "팀플 회의 · 10/29~10/31";
+    document.getElementById("og-n").textContent = "팀플 회의";
+    setTimeout(() => openSheet("#share"), 100);
+  }
+</script>
+</body>
+</html>

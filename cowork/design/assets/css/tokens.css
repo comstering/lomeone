@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Lomeone · Design Tokens  (LM-PRD-01 §7)
+   - 역할(토큰 이름)은 PRD §7.2 그대로. 값은 시안 제안값 (D-5 확정 전)
+   - 브랜드 색 2안: 기본 = A안 "민트 틸",  <html data-brand="b"> = B안 "코발트"
+   - 다크: 시스템 설정(prefers-color-scheme) 또는 <html data-theme="dark|light">
+   ========================================================================== */
+
+:root {
+  /* font */
+  --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+
+  /* space (4px scale) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-6: 24px; --s-8: 32px; --s-12: 48px; --s-16: 64px;
+
+  /* radius */
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 24px; --r-pill: 999px;
+
+  /* motion (§7.6) */
+  --t-fast: 120ms ease-out;
+  --t-sheet: 240ms cubic-bezier(.2, .8, .2, 1);
+  --t-view: 300ms ease-in-out;
+
+  /* layout */
+  --gutter: 16px;
+  --bar-h: 72px;
+
+  /* ---- light (A안: 민트 틸) ---- */
+  --bg: #FFFFFF;
+  --bg-subtle: #F5F7F7;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+
+  --text: #121817;          /* 18:1 */
+  --text-muted: #4A5654;    /* 7.6:1 */
+  --text-subtle: #66726F;   /* 4.9:1 */
+
+  --border: #E1E6E5;
+  --border-strong: #8A9693; /* 3.1:1 (UI 경계) */
+
+  --accent: #0B7F70;        /* 흰 글자 4.9:1 */
+  --accent-hover: #096A5D;
+  --accent-fg: #FFFFFF;
+  --accent-subtle: #E3F4F1;
+  --accent-ink: #075A4F;    /* subtle 배경 위 글자 */
+
+  --positive: #166A2D;
+  --positive-subtle: #E4F4E8;
+  --warning: #9A5B00;
+  --warning-subtle: #FFF1D6;
+  --danger: #C62828;
+  --danger-subtle: #FDE8E8;
+
+  --kakao-bg: #FEE500;
+  --kakao-fg: #191919;
+
+  --focus-ring: #1A5FD0;
+  --shadow-1: 0 1px 2px rgba(18, 24, 23, .06), 0 1px 3px rgba(18, 24, 23, .08);
+  --shadow-2: 0 8px 28px rgba(18, 24, 23, .12);
+  --scrim: rgba(18, 24, 23, .48);
+
+  /* heat: --accent 한 색의 농도 단계 (0명 → 전원 직전) */
+  --heat-0: var(--bg-subtle);
+  --heat-1: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --heat-2: color-mix(in srgb, var(--accent) 32%, var(--surface));
+  --heat-3: color-mix(in srgb, var(--accent) 50%, var(--surface));
+  --heat-4: color-mix(in srgb, var(--accent) 70%, var(--surface));
+  --heat-5: color-mix(in srgb, var(--accent) 88%, var(--surface));
+  --heat-all: var(--accent);          /* + 체크·테두리 (색만으로 구분 금지) */
+  --heat-all-ring: var(--text);
+  --heat-ink: var(--accent-fg);       /* heat-4 이상 위 글자 */
+
+  --paint-on: var(--accent);
+  --paint-preview: color-mix(in srgb, var(--accent) 38%, transparent);
+  --paint-erase-preview: color-mix(in srgb, var(--danger) 30%, transparent);
+  --grid-hour-line: var(--border-strong);
+  --grid-half-line: var(--border);
+}
+
+/* ---- B안: 코발트 ---- */
+:root[data-brand="b"] {
+  --accent: #2F55D4;        /* 흰 글자 6.2:1 */
+  --accent-hover: #2545B0;
+  --accent-subtle: #E8EEFF;
+  --accent-ink: #1E3A9E;
+}
+
+/* ---- dark ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { color-scheme: dark; }
+}
+:root[data-theme="dark"] { color-scheme: dark; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1514; --bg-subtle: #172120; --surface: #1A2423; --surface-raised: #223130;
+    --text: #EEF3F2; --text-muted: #B4C0BD; --text-subtle: #93A19E;
+    --border: #2C3938; --border-strong: #6E7D7A;
+    --accent: #3FCBB6; --accent-hover: #5AD8C5; --accent-fg: #06201C; --accent-subtle: #17403B; --accent-ink: #8FE9DA;
+    --positive: #5FD07F; --positive-subtle: #17341F;
+    --warning: #F2B550; --warning-subtle: #3B2B0D;
+    --danger: #FF8A80; --danger-subtle: #3E1B1B;
+    --focus-ring: #7AA8FF; --scrim: rgba(0, 0, 0, .6);
+    --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
+    --heat-all-ring: #FFFFFF;
+  }
+  :root[data-brand="b"]:not([data-theme="light"]) {
+    --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1514; --bg-subtle: #172120; --surface: #1A2423; --surface-raised: #223130;
+  --text: #EEF3F2; --text-muted: #B4C0BD; --text-subtle: #93A19E;
+  --border: #2C3938; --border-strong: #6E7D7A;
+  --accent: #3FCBB6; --accent-hover: #5AD8C5; --accent-fg: #06201C; --accent-subtle: #17403B; --accent-ink: #8FE9DA;
+  --positive: #5FD07F; --positive-subtle: #17341F;
+  --warning: #F2B550; --warning-subtle: #3B2B0D;
+  --danger: #FF8A80; --danger-subtle: #3E1B1B;
+  --focus-ring: #7AA8FF; --scrim: rgba(0, 0, 0, .6);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.4); --shadow-2: 0 8px 28px rgba(0,0,0,.5);
+  --heat-all-ring: #FFFFFF;
+}
+:root[data-theme="dark"][data-brand="b"] {
+  --accent: #7C9BFF; --accent-hover: #98B0FF; --accent-fg: #0A1640; --accent-subtle: #1C2B63; --accent-ink: #B9C9FF;
+}
+
+/* 데스크톱 거터 (§7.1) */
+@media (min-width: 768px)  { :root { --gutter: 24px; } }
+@media (min-width: 1024px) { :root { --gutter: 32px; } }

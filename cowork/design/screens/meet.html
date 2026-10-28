@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>약속 시간, 링크 하나로 맞추세요 — 로미원 약속</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  /* SCR-02: 폼이 첫 화면. 모바일에서는 버튼을 폼 끝에 두고(고정 바 X) 360×640 안에 들어오게 달력은 2주만 */
+  .lead { padding-block: var(--s-6) var(--s-4); }
+  .lead p { color: var(--text-muted); margin-top: 4px; }
+  .formcard { padding-bottom: var(--s-6); }
+  .formcard .stack-lg { gap: var(--s-4); }
+  main { padding-bottom: calc(var(--bar-h) + 8px); }
+  @media (min-width: 1024px) { main { padding-bottom: 0; } .formcard .submit-bar { margin-top: var(--s-2); } }
+  .formcard .cal { padding: 8px; } .formcard .day { min-height: 36px; }
+  @media (min-width: 1024px) {
+    .land { display: grid; grid-template-columns: 1fr 480px; gap: var(--s-12); align-items: start; padding-block: var(--s-12); }
+    .lead { padding: 0; } .lead h1 { font-size: 44px; line-height: 52px; }
+    .formcard { border: 1px solid var(--border); border-radius: var(--r-xl); padding: var(--s-6); box-shadow: var(--shadow-1); position: sticky; top: 80px; background: var(--surface); }
+  }
+  .other-uses { padding-block: var(--s-8); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="default"></div>
+  <main>
+    <div class="wrap land">
+      <div>
+        <div class="lead">
+          <h1 class="t-h1" id="h1">약속 시간, 링크 하나로 맞추세요</h1>
+          <p>가능한 시간만 칠하면 끝</p>
+        </div>
+        <div class="only-desktop stack-lg" style="margin-top:var(--s-8)">
+          <ol class="how" style="grid-template-columns:1fr"><li><span class="n">1</span><div><b>만들고</b><span>날짜만 탭하면 링크가 만들어져요</span></div></li><li><span class="n">2</span><div><b>단톡방에 보내요</b><span>링크를 누르면 이름만 쓰고 시간을 칠해요</span></div></li><li><span class="n">3</span><div><b>정해져요</b><span>모두 되는 시간이 글자로 바로 나와요</span></div></li></ol>
+        </div>
+      </div>
+      <div class="formcard" id="form"></div>
+    </div>
+
+    <section class="section subtle only-mobile"><div class="wrap stack-lg"><h2 class="t-h2">이렇게 써요</h2>
+      <ol class="how"><li><span class="n">1</span><div><b>만들고</b><span>날짜만 탭하면 링크가 만들어져요</span></div></li><li><span class="n">2</span><div><b>단톡방에 보내요</b><span>링크를 누르면 이름만 쓰고 시간을 칠해요</span></div></li><li><span class="n">3</span><div><b>정해져요</b><span>모두 되는 시간이 글자로 바로 나와요</span></div></li></ol></div></section>
+
+    <!-- C-30 FAQAccordion -->
+    <section class="section">
+      <div class="wrap narrow stack">
+        <h2 class="t-h1">자주 묻는 질문</h2>
+        <div class="faq">
+          <details><summary>로그인이나 앱 설치가 필요한가요?</summary><p>아니요. 링크를 만드는 사람도, 응답하는 사람도 로그인 없이 쓸 수 있어요.</p></details>
+          <details><summary>몇 명까지 응답할 수 있어요?</summary><p>인원 제한 없이 응답을 받을 수 있어요. 20명이 넘으면 응답자는 "외 n명"으로 줄여 보여줘요.</p></details>
+          <details><summary>누가 이 모임을 볼 수 있나요?</summary><p>링크를 아는 사람만 볼 수 있어요. 검색이나 목록에는 나오지 않아요.</p></details>
+          <details><summary>응답한 내용은 언제 지워져요?</summary><p>모임의 마지막 날짜로부터 90일 뒤에 자동으로 지워져요.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="other-uses wrap stack">
+      <h2 class="t-h2">다른 모임에도</h2>
+      <div class="chips wrap-chips">
+        <a class="chip" href="?for=team-project">팀플</a><a class="chip" href="?for=club">동아리</a><a class="chip" href="?for=dinner">회식</a><a class="chip" href="?for=reunion">동창회</a><a class="chip" href="?for=study">스터디</a><a class="chip" href="?for=trip">여행</a>
+      </div>
+    </section>
+  </main>
+  <div data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/create.js"></script>
+<script>
+  /* 용도별 변형 (PRD §6 SCR-02 표). 디자인은 같고 문구·기본값만 다르다. */
+  const USES = {
+    "": ["약속 시간, 링크 하나로 맞추세요", "우리 모임", "time", "09:00", "22:00", "date"],
+    "team-project": ["팀플 회의 시간, 링크 하나로 맞추세요", "팀플 회의", "time", "09:00", "23:00", "date"],
+    club: ["동아리 모임 날짜, 한 번에 정하세요", "동아리 모임", "time", "10:00", "22:00", "date"],
+    dinner: ["회식 날짜, 눈치 보지 말고 정하세요", "팀 회식", "time", "18:00", "22:00", "date"],
+    reunion: ["동창회 날짜, 제일 많이 오는 날로", "동창회", "date", "09:00", "22:00", "date"],
+    study: ["스터디 시간, 매주 고정으로 맞추세요", "스터디", "time", "09:00", "23:00", "dow"],
+    trip: ["여행 날짜, 다 같이 되는 날로", "여행", "date", "09:00", "22:00", "date"],
+  };
+  const u = USES[new URLSearchParams(location.search).get("for") || ""] || USES[""];
+  document.getElementById("h1").textContent = u[0]; document.title = u[0] + " — 로미원 약속";
+  const f = document.getElementById("form");
+  createForm(f, { name: u[1], mode: u[2], from: u[3], to: u[4], by: u[5], compact: true });
+  mountShareSheet();
+  f.addEventListener("created", (e) => { document.getElementById("sh-n").textContent = e.detail.name + " · " + e.detail.n + "일 선택"; document.getElementById("og-n").textContent = e.detail.name; openSheet("#share"); });
+</script>
+</body>
+</html>
