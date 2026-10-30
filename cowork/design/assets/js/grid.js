@@ -14,10 +14,12 @@
     { d: "11/5", w: "수", full: "11월 5일 수요일" },
   ];
   /* 데모 응답 (PRD §6 SCR-07 예시와 같은 값). [시작시, 끝시] 24시간제 */
+  /* 요일 모드(스터디): 날짜 없이 요일만 */
+  const DOWS = ["월", "화", "수", "목", "금", "토", "일"].map((w) => ({ d: "", w, full: w + "요일" }));
   const PEOPLE = {
     지원: [[[19, 22]], [[10, 12]], [[19, 21]]],
     민수: [[[18, 22]], [[14, 18]], [[19, 21]]],
-    서연: [[[19, 21.5]], [[10, 12]], [[17, 19]]],
+    서연: [[[19, 21]], [[10, 12]], [[17, 19]]],
     하준: [[[19, 23]], [[10, 12]], [[19, 21]]],
     예린: [[[19, 21]], [[10, 12]], [[19, 21]]],
   };
@@ -31,10 +33,10 @@
 
   function build(el, opt) {
     const o = Object.assign({ mode: "input", days: 3, from: 9, to: 23, people: Object.keys(opt && opt.data || PEOPLE) }, opt);
-    const days = DAYS.slice(0, o.days), rows = (o.to - o.from) * 2;
-    el.classList.add("slot"); el.dataset.mode = o.mode; el.style.setProperty("--days", days.length);
+    const days = (o.dow ? DOWS : DAYS).slice(0, o.days), rows = (o.to - o.from) * 2;
+    el.classList.add("slot"); el.dataset.mode = o.mode; if (o.closed) el.classList.add("closed"); el.style.setProperty("--days", days.length);
     const sel = new Set(), total = o.people.length;
-    let html = `<div class="slot-scroll"><div class="slot-table" role="grid" aria-label="${o.mode === "input" ? "가능한 시간 칠하기" : "응답 히트맵"}" aria-colcount="${days.length}" ${o.mode === "input" ? 'aria-multiselectable="true"' : ""}><div class="slot-head" role="row"><div role="presentation"></div>${days.map((d, i) => `<div role="columnheader"><button type="button" data-day="${i}" aria-label="${d.full} 전부 토글"><span class="d">${d.d}</span><span class="w">${d.w}</span></button></div>`).join("")}</div>`;
+    let html = `<div class="slot-scroll"><div class="slot-table" role="grid" aria-label="${o.mode === "input" ? "가능한 시간 칠하기" : "응답 히트맵"}" aria-colcount="${days.length}" ${o.mode === "input" ? 'aria-multiselectable="true"' : ""}><div class="slot-head" role="row"><div role="presentation"></div>${days.map((d, i) => `<div role="columnheader"><button type="button" data-day="${i}" aria-label="${d.full} 전부 토글">${d.d ? `<span class="d">${d.d}</span>` : ""}<span class="w${d.d ? "" : " only"}">${d.w}</span></button></div>`).join("")}</div>`;
     for (let r = 0; r < rows; r++) {
       const hour = r % 2 === 0, t = o.from + r / 2;
       html += `<div class="slot-row" role="row" aria-label="${ampm(t)}${t % 1 ? " 30분" : ""}"><div class="ax" role="rowheader" ${hour ? "" : 'aria-hidden="true"'}>${hour ? t + "시" : ""}</div>`;
@@ -73,7 +75,7 @@
         if (dy && start) { scroller.scrollTop += dy; raf = requestAnimationFrame(() => autoscroll(y)); }
       };
       el.addEventListener("pointerdown", (e) => {
-        const c = e.target.closest(".cell"); if (!c || el.classList.contains("paint-off")) return; e.preventDefault();
+        const c = e.target.closest(".cell"); if (!c || el.classList.contains("paint-off") || el.classList.contains("closed")) return; e.preventDefault();
         start = pos(c); painting = !c.classList.contains("on"); last = c; draw(c, e);
       });
       document.addEventListener("pointermove", (e) => {
@@ -126,6 +128,8 @@
         },
       };
     }
+    /* 처음 보이는 구간: 정답 시간이 첫 화면 안에 오도록 (E-02) */
+    if (o.scrollTo != null) scroller.scrollTop = Math.max(0, (o.scrollTo - o.from) * 2 * 32 - 40);
     return el;
   }
   window.LM = { buildGrid: build, PEOPLE, DAYS };

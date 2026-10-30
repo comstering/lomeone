@@ -28,7 +28,6 @@
     <h1 class="t-display" style="font-size:32px;line-height:40px">웹디자인 시안 · 1단계 "로미원 약속"</h1>
     <p class="muted">기준 문서 <code>LM-PRD-01</code> v1.0 · 모바일 360px 기준 · 각 프레임은 실제 동작하는 HTML이에요 (칠하기·시트·상태 전환 가능). 데스크톱은 "전체 화면 ↗"로 열어 창 폭을 넓혀 보세요.</p>
     <div class="links">
-      <button class="chip" onclick="sw('brand','a')">색 A안 민트 틸</button><button class="chip" onclick="sw('brand','b')">색 B안 코발트</button>
       <button class="chip" onclick="sw('theme','light')">라이트</button><button class="chip" onclick="sw('theme','dark')">다크</button><button class="chip" onclick="sw('inapp','1')">카톡 인앱 높이</button>
       <a class="chip" href="screens/brand.html">브랜드·토큰·컴포넌트</a><a class="chip" href="screens/og.html">카톡 미리보기(OG)</a>
     </div>
@@ -44,33 +43,48 @@
   /* [ID, 제목, 설명, 파일+쿼리] */
   const G = [
     ["총무 흐름", [
-      ["SCR-01", "홈", "히어로 데모 · 3단계 · 용도 칩 · 곧 나와요", "home.html"],
+      ["SCR-01", "홈", "히어로 데모 · 3단계 · 용도 칩 · 곧 나와요(기능 아이콘)", "home.html"],
       ["SCR-02", "약속 랜딩 (팀플)", "폼이 첫 화면 · 용도별 6종", "meet.html?for=team-project"],
-      ["SCR-03", "모임 만들기", "날짜를 탭하면 버튼이 활성화돼요", "new.html"],
-      ["SCR-04", "공유 시트", "카톡 · 링크 복사 · 총무 링크", "new.html?sheet=1"],
-      ["SCR-08", "총무 관리 (응답 중)", "추천 카드 + 확정 버튼", "m.html?v=admin"],
+      ["SCR-03", "모임 만들기", "빠른 날짜 칩 · 더 설정하기(마감) · 비활성 이유", "new.html"],
+      ["SCR-04", "공유 시트", "카톡 · 복사 · 나와의 채팅 저장 (첫 화면 안)", "new.html?sheet=1"],
+      ["SCR-08", "총무 관리 (응답 중)", "추천 카드 + 확정 · 응답 관리", "m.html?v=admin"],
+      ["SCR-08", "응답 관리 시트", "응답 삭제 진입 (S-06·E-09)", "m.html?v=admin&sheet=list"],
+      ["SCR-08", "응답 삭제 확인", "{이름}의 응답을 지울까요?", "m.html?v=admin&sheet=delr"],
       ["SCR-08", "확정 확인 시트", "{시간}로 확정할까요?", "m.html?v=admin&sheet=confirm"],
       ["SCR-08", "응답 0명", "빈 상태 + 공유", "m.html?v=admin-empty"],
-      ["SCR-08", "삭제 확인", "되돌릴 수 없음", "m.html?v=admin&sheet=delete"],
+      ["SCR-08", "확정 시간 바꾸기", "바꾸는 중 배너 + 새 시간 선택", "m.html?v=admin&change=1"],
+      ["SCR-08", "날짜만 모드 총무", "확정 시 시간(선택) 기본 하루 종일", "m.html?v=admin-date&sheet=confirm"],
     ]],
     ["참여자 흐름", [
-      ["SCR-05", "이름 입력", "처음 온 참여자의 첫 화면", "m.html?v=name"],
+      ["SCR-05", "이름 입력", "중복 이름은 덮어쓰기 불가 (입력 \"민수\")", "m.html?v=name"],
       ["SCR-06", "시간 칠하기 (A안)", "셀 = 칠하기 · 시간축 = 스크롤", "m.html?v=paint"],
       ["SCR-06", "시간 칠하기 (B안)", "D-8 대안: 칠하기 모드 토글", "m.html?v=paint&alt=b&coach=0"],
       ["SCR-06", "빈 그리드 + 8일", "0칸 제출 · 가로 넘김", "m.html?v=paint&filled=0&days=8&coach=0"],
+      ["SCR-06", "요일 모드 (스터디)", "헤더 요일만 · 매주 반복", "m.html?v=paint-dow&coach=0"],
+      ["SCR-06", "응답 마감", "배너 + 칠하기 비활성 + 결과 보기", "m.html?v=paint-closed"],
       ["SCR-06b", "날짜만 모드", "돼요 · 애매 · 안 돼요", "m.html?v=dateonly"],
-      ["SCR-07", "결과", "추천 Top3 · 히트맵 · 생성 유도", "m.html?v=result"],
-      ["SCR-07", "전원 없음 + 동률", "가장 많이 되는 시간", "m.html?v=result-none"],
+      ["SCR-07", "결과", "추천 Top3(공동 순위) · 최소 길이 3칩 · 총무 링크로 열기", "m.html?v=result"],
+      ["SCR-07", "전원 없음 + 동률", "순위 1·1·3", "m.html?v=result-none"],
+      ["SCR-07", "1시간 겹침 없음", "30분 자동 폴백 + 캡션", "m.html?v=result-short"],
+      ["SCR-07", "날짜만 결과", "추천 날 + 날짜별 막대", "m.html?v=result-date"],
+      ["SCR-07", "요일 모드 결과", "매주 수 19:00–21:00", "m.html?v=result-dow"],
+      ["SCR-07", "응답 24명", "외 n명 → 목록 시트", "m.html?v=result-many&sheet=list"],
       ["SCR-07", "응답 1명", "공유 유도", "m.html?v=result-one"],
+      ["SCR-07", "총무 링크로 열기", "다른 기기에서 총무 키 입력", "m.html?v=result&sheet=key"],
     ]],
     ["확정 · 재방문 · 예외", [
       ["SCR-09", "확정됨", "캡처해도 읽히는 카드", "m.html?v=confirmed"],
       ["SCR-09", "일부 불가", "4명 가능 · 민수 불가", "m.html?v=confirmed-part"],
-      ["SCR-09", "변경됨", "시간이 바뀌었어요", "m.html?v=confirmed-changed"],
+      ["SCR-09", "변경됨 (참여자)", "시간이 바뀌었어요", "m.html?v=confirmed-changed"],
+      ["SCR-09", "변경됨 (총무)", "바뀐 시간 알리기", "m.html?v=confirmed-changed-admin"],
+      ["SCR-09", "총무 메뉴", "확정 시간 바꾸기 · 확정 취소", "m.html?v=confirmed-admin&sheet=menu"],
+      ["SCR-09", "확정 취소 → 토스트", "취소 직후 알리기 액션", "m.html?v=admin&toast=uncf"],
+      ["SCR-09", "날짜만 확정", "11월 8일 토요일 · 하루 종일", "m.html?v=confirmed-date"],
+      ["SCR-09", "요일 모드 확정", "매주 수요일 · 반복 일정", "m.html?v=confirmed-dow&sheet=cal"],
       ["SCR-09", "지난 모임", "생성 유도 강조", "m.html?v=past"],
-      ["SCR-09", "캘린더 메뉴", "인앱 브라우저 안내 배너", "m.html?v=confirmed&sheet=cal"],
-      ["SCR-10", "내 모임", "만든 / 응답한", "my.html"],
+      ["SCR-10", "내 모임", "브라우저 저장 안내", "my.html"],
       ["SCR-10", "내 모임 (빈 상태)", "", "my.html?empty=1"],
+      ["공통", "로딩 스켈레톤", "모임 페이지 / 내 모임", "m.html?v=loading"],
       ["SCR-11", "404 · 만료 · 삭제", "새 총무가 되는 입구", "gone.html?k=expired"],
       ["SCR-12", "소개 / 개인정보", "문서 템플릿", "about.html?doc=privacy"],
     ]],

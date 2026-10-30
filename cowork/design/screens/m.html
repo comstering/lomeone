@@ -8,9 +8,8 @@
 <link rel="stylesheet" href="../assets/css/tokens.css">
 <link rel="stylesheet" href="../assets/css/components.css">
 <style>
-  /* 모임 페이지 /m/[id] — 한 주소, 상태에 따라 화면이 바뀐다 (PRD §5.3)
-     ?v= name | paint | dateonly | result | result-one | result-none | admin | admin-empty | confirmed | confirmed-part | confirmed-changed | confirmed-admin | past
-     ?sheet= confirm | menu | delete | cal     ?days=8 (가로 넘김)   ?alt=b (D-8 B안)   ?inapp=1 (카톡 인앱 높이)   ?theme=dark  ?brand=b */
+  /* 모임 페이지 /m/[id] — 한 주소, 상태에 따라 화면이 바뀐다 (PRD §5.3). 상태 목록은 DESIGN-SPEC.md §1
+     ?v=…  ?sheet=confirm|menu|delete|cal|uncf|list|key|delr  ?days=8  ?alt=b  ?inapp=1  ?theme=dark  ?change=1 */
   #app { padding-bottom: calc(var(--bar-h) + 24px); max-width: 1100px; }
   #app[data-narrow] { max-width: 600px; }
   .sec-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: var(--s-3); }
@@ -21,6 +20,26 @@
   .who-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .who-chips .chip { min-height: 32px; font-size: 13px; padding: 0 12px; background: var(--bg-subtle); border-color: var(--border); }
   .mini { padding: var(--s-4); }
+  .modal-btns { display: grid; gap: 8px; margin-top: 8px; }
+  .foot-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; padding-block: var(--s-6) var(--s-2); color: var(--text-subtle); font-size: 13px; }
+  .foot-note .link-btn { min-height: 36px; padding: 0 8px; font-size: 13px; color: var(--accent-ink); }
+  /* 날짜만 결과: 날짜별 가로 막대 (돼요 진하게 · 애매 옅게+줄무늬 · 숫자 병기 = 색만으로 구분하지 않음) */
+  .bars { display: flex; flex-direction: column; gap: 4px; }
+  .bar-row { display: grid; grid-template-columns: 84px 1fr; gap: 2px 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .bar-row.top { background: var(--accent-subtle); border-radius: var(--r-sm); padding-inline: 8px; margin-inline: -8px; border-bottom-color: transparent; }
+  .bar-row .d { font-weight: 700; font-size: 14px; grid-row: span 2; } .bar-row .d small { display: block; font-weight: 500; color: var(--text-subtle); font-size: 12px; }
+  .bar-track { display: flex; height: 18px; border-radius: 9px; overflow: hidden; background: var(--heat-0); border: 1px solid var(--border); }
+  .bar-track i { display: block; height: 100%; } .bar-track .y { background: var(--accent); } .bar-track .m { background: var(--heat-2); background-image: repeating-linear-gradient(135deg, transparent 0 3px, rgba(255,255,255,.45) 3px 5px); }
+  .bar-num { font-size: 12px; color: var(--text-muted); }
+  /* 응답자 목록 시트 */
+  .rl { display: flex; flex-direction: column; max-height: 52dvh; overflow: auto; }
+  .rl li { list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; min-height: 52px; border-bottom: 1px solid var(--border); }
+  .rl button.nm { all: unset; cursor: pointer; display: flex; flex-direction: column; padding-block: 6px; min-height: 44px; justify-content: center; }
+  .rl button.nm:focus-visible { outline: 2px solid var(--focus-ring); }
+  .rl .nm b { font-size: 16px; } .rl .nm small { color: var(--text-subtle); font-size: 12px; }
+  .rl .btn { min-height: 36px; font-size: 13px; padding: 0 12px; }
+  .sk-grid { height: 420px; border-radius: var(--r-md); }
+  a.menu-item { min-height: 52px; display: flex; align-items: center; gap: var(--s-3); padding: 0 var(--s-2); border-bottom: 1px solid var(--border); font-size: 16px; }
   @media (min-width: 1024px) {
     #app { padding-bottom: var(--s-16); }
     .split > aside { order: 2; }
@@ -28,9 +47,6 @@
     #app:not([data-narrow]) .submit-bar { max-width: 360px; margin-left: auto; margin-top: var(--s-4); }
   }
   @media (max-width: 1023px) { .split.af > aside { order: -1; } }
-  .modal-btns { display: grid; gap: 8px; margin-top: 8px; }
-  .scroll-guard { touch-action: pan-y; }
-  .tabs-note { font-size: 12px; color: var(--text-subtle); }
 </style>
 </head>
 <body>
@@ -41,43 +57,103 @@
 <script>
   /* 헤더 설정은 shared.js 가 실행되기 전에 */
   const Q = new URLSearchParams(location.search), V = Q.get("v") || "result";
+  const RES = ["result", "result-one", "result-none", "result-short", "result-date", "result-dow", "result-many"];
+  const ADM = ["admin", "admin-empty", "admin-date", "admin-many"];
+  const CNF = ["confirmed", "confirmed-part", "confirmed-changed", "confirmed-changed-admin", "confirmed-admin", "confirmed-date", "confirmed-dow", "past"];
   const hdr = document.getElementById("hdr");
-  const ICON_PATH = ""; // (icon()은 shared.js 로드 후 사용 가능 — 아래 렌더에서 처리)
-  const H = {
-    name: ["compact", ""], paint: ["back", "팀플 회의", "name"], dateonly: ["back", "팀플 회의", "name"],
-    result: ["back", "팀플 회의", "SHARE"], "result-one": ["back", "팀플 회의", "SHARE"], "result-none": ["back", "팀플 회의", "SHARE"],
-    admin: ["back", "팀플 회의", "ADMIN"], "admin-empty": ["back", "팀플 회의", "ADMIN"],
-    confirmed: ["compact", "", ""], "confirmed-part": ["compact", "", ""], "confirmed-changed": ["compact", "", ""], "confirmed-admin": ["compact", "", "MORE"], past: ["compact", "", ""],
-  }[V] || ["back", "팀플 회의", ""];
-  hdr.dataset.header = H[0]; hdr.dataset.title = H[1]; hdr.dataset.href = "m.html?v=" + (H[2] === "name" ? "name" : "name");
+  const kindOf = () => RES.includes(V) ? "share" : ADM.includes(V) ? "admin" : ["confirmed-admin", "confirmed-changed-admin"].includes(V) ? "more" : ["paint", "paint-dow", "paint-closed", "dateonly"].includes(V) ? "me" : "";
+  const compact = V === "name" || CNF.includes(V) || V === "loading";
+  hdr.dataset.header = compact ? "compact" : "back"; hdr.dataset.title = "팀플 회의"; hdr.dataset.href = "m.html?v=name";
 </script>
 <script src="../assets/js/shared.js"></script>
 <script src="../assets/js/grid.js"></script>
 <script>
 (function () {
-  const app = document.getElementById("app"), days = +(Q.get("days") || 3);
-  const fixRight = () => {   // 헤더 우측 액션 (shared.js 가 만든 뒤 주입)
-    const nav = document.querySelector(".site-header nav"), t = document.querySelector(".site-header .title"); if (!nav) return;
-    const kind = { SHARE: "share", ADMIN: "admin", MORE: "more", name: "me" }[(({ result: "SHARE", "result-one": "SHARE", "result-none": "SHARE", admin: "ADMIN", "admin-empty": "ADMIN", "confirmed-admin": "MORE", paint: "name", dateonly: "name" })[V]) || ""] || "";
-    if (V === "paint" || V === "dateonly") nav.innerHTML = `<button class="link-btn" data-open="#sh-name" style="gap:4px">지원 ${icon("pencil")}</button>`;
-    if (kind === "share") nav.innerHTML = `<button class="icon-btn" data-copy="링크를 복사했어요" aria-label="공유">${icon("share")}</button><button class="icon-btn" data-open="#sh-menu" aria-label="더보기">${icon("more")}</button>`;
-    if (kind === "admin") { nav.innerHTML = `<span class="badge admin">총무</span><button class="icon-btn" data-open="#sh-menu" aria-label="더보기">${icon("more")}</button>`; }
-    if (kind === "more") nav.innerHTML = `<span class="badge admin">총무</span><button class="icon-btn" data-open="#sh-menu" aria-label="관리 메뉴">${icon("more")}</button>`;
+  const app = document.getElementById("app"), days = +(Q.get("days") || 3), $ = (s) => document.querySelector(s);
+  const IS_ADMIN = ADM.includes(V) || ["confirmed-admin", "confirmed-changed-admin"].includes(V) || (V === "confirmed-date" && !!Q.get("admin"));
+  const CHANGE = !!Q.get("change");
+
+  /* ================= 샘플 데이터 (결과·총무·확정 화면이 모두 같은 응답을 쓴다 — E-02) ================= */
+  const P = LM.PEOPLE;                                              // 지원·민수·서연·하준·예린 (5명)
+  const D5 = P;
+  const D3 = { 지원: P.지원, 민수: P.민수, 서연: P.서연 };
+  const D1 = { 지원: P.지원 };
+  const DNONE = { 지원: [[[19, 21]], [[10, 12]], []], 민수: [[[19, 21]], [], []], 서연: [[], [[10, 12]], [[9, 11]]] };      // 전원 없음 + 동률
+  const DSHORT = { 지원: [[[19, 20]], [], []], 민수: [[[19.5, 21]], [], []], 서연: [[[19.5, 20]], [], []] };               // 1시간 겹침 없음 → 30분 폴백
+  const DPART = Object.assign({}, D5, { 민수: [[[17, 19]], [[14, 18]], [[19, 21]]] });                                      // 수 19–21 민수 불가
+  const POOL = ["지원", "민수", "서연", "하준", "예린", "도윤", "서준", "지우", "하은", "수아", "시우", "예준", "주원", "지호", "유진", "채원", "현우", "다은", "민재", "소율", "건우", "나연", "태민", "아린"];
+  const DMANY = {}; POOL.forEach((n, i) => { const b = P[POOL[i % 5]]; DMANY[n] = i >= 5 && i % 3 === 0 ? [b[0], [], b[2]] : b; });
+  const DDOW = {}; Object.keys(D5).forEach((n) => { DDOW[n] = [[], [], ...D5[n]]; });                                           // 월0 화1 수2 목3 금4 …
+  const DATA = { "result-one": D1, "result-none": DNONE, "result-short": DSHORT, "result-many": DMANY, "result-dow": DDOW, admin: D3, "admin-many": DMANY, "admin-date": D3, "confirmed-part": DPART }[V] || D5;
+  const NAMES = Object.keys(DATA), N = NAMES.length;
+  const isDow = V === "result-dow" || V === "paint-dow" || V === "confirmed-dow";
+  const GRID = { from: 9, to: 23, days: isDow ? 7 : days };
+  const DOWN = ["월", "화", "수", "목", "금", "토", "일"];
+
+  /* ================= 추천 시간 계산 (PRD v1.1: 인원 → 연속 길이 → 이른 날짜, 최대 3개, 공동 순위 1·1·3) ================= */
+  const hm = (t) => `${String(Math.floor(t)).padStart(2, "0")}:${t % 1 ? "30" : "00"}`;
+  function candidates(data, nd, from, to, L) {
+    const rows = (to - from) * 2, names = Object.keys(data), cells = [];
+    for (let d = 0; d < nd; d++) { cells[d] = []; for (let r = 0; r < rows; r++) { const t = from + r / 2; cells[d][r] = new Set(names.filter((n) => ((data[n] || [])[d] || []).some(([a, b]) => t >= a && t < b))); } }
+    const sup = (a, s) => a && [...s].every((x) => a.has(x)), out = [];
+    for (let d = 0; d < nd; d++) for (let s = 0; s < rows; s++) {
+      let set = new Set(names);
+      for (let e = s; e < rows; e++) {
+        set = new Set([...set].filter((x) => cells[d][e].has(x))); if (!set.size) break;
+        if (e - s + 1 >= L && !sup(cells[d][s - 1], set) && !sup(cells[d][e + 1], set)) out.push({ d, a: from + s / 2, b: from + (e + 1) / 2, set, c: set.size, len: e - s + 1 });
+      }
+    }
+    out.sort((x, y) => y.c - x.c || y.len - x.len || x.d - y.d || x.a - y.a);
+    const pick = []; out.forEach((x) => { if (pick.length < 3 && !pick.some((p) => p.d === x.d && p.a < x.b && x.a < p.b)) pick.push(x); });
+    pick.forEach((x) => (x.rank = 1 + pick.filter((y) => y.c > x.c).length));
+    return pick;
+  }
+  function best(minL) {
+    let list = candidates(DATA, GRID.days, GRID.from, GRID.to, minL), fell = false;
+    if (N > 1 && minL > 1 && !list.some((x) => x.c >= 2)) { list = candidates(DATA, GRID.days, GRID.from, GRID.to, 1); fell = true; }   // Q-06 자동 30분
+    return { list, fell };
+  }
+  const dayName = (d) => (isDow ? `매주 ${DOWN[d]}` : `${LM.DAYS[d].w} ${LM.DAYS[d].d}`);
+
+  /* ================= 조각 ================= */
+  const summary = (n, o = {}) => `<div class="summary"><h1 class="t-h1">팀플 회의</h1><div class="meta"><span>${icon("cal")}${o.dates || "10월 29일(수) ~ 31일(금)"}</span>${o.noTime ? "" : `<span>${icon("clock")}09:00 ~ 23:00</span>`}<span>${icon("user")}${n}명 응답</span></div></div>`;
+  const card = (x, admin) => {
+    const miss = NAMES.filter((n) => !x.set.has(n)), all = x.c === N;
+    const who = `${all ? `<span class="all-badge">${icon("check")}전원 가능</span>` : ""}${x.c}/${N}명${!all ? ` · <span class="miss">${miss.slice(0, 2).join("·")}${miss.length > 2 ? ` 외 ${miss.length - 2}명` : ""} 빠짐</span>` : ""}`;
+    const when = `${dayName(x.d)} ${hm(x.a)}–${hm(x.b)}`, tag = admin ? "div" : "button";
+    const body = `<span class="rank">${x.rank}</span><span><span class="when">${when}</span><span class="who">${who}</span></span>`;
+    /* 버튼 안에 버튼을 중첩하지 않는다 → 총무 카드는 div + 별도 확정 버튼 */
+    return `<${tag} class="best ${x.rank === 1 ? "first" : ""}" ${admin ? "" : 'type="button" aria-pressed="false"'} data-r="${x.d},${x.a},${x.b}">${body}${admin ? `<button class="cta btn ${x.rank === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}" data-c="${x.c}">${CHANGE ? "이 시간으로 바꾸기" : "이 시간으로 확정"}</button>` : ""}</${tag}>`;
   };
-
-  /* ---------- 조각 ---------- */
-  const summary = (n, extra = "") => `<div class="summary"><h1 class="t-h1">팀플 회의</h1><div class="meta"><span>${icon("cal")}10월 29일(수) ~ 31일(금)</span><span>${icon("clock")}09:00 ~ 23:00</span><span>${icon("user")}${n}명 응답</span></div>${extra}</div>`;
-  const chips = (names) => `<div class="resp-chips" id="chips"><span class="count">${names.length}명 응답</span>${names.map((n) => `<button class="chip" aria-pressed="false" data-n="${n}">${n}</button>`).join("")}</div>`;
-  const best = (i, when, who, r, admin, all) => { const tag = admin ? "div" : "button", inner = `<span class="rank">${i}</span><span><span class="when">${when}</span><span class="who">${all ? `<span class="all-badge">${icon("check", "")}전원 가능</span>` : ""}${who}</span></span>`;
-    /* 총무 카드: 버튼 안에 버튼을 중첩하지 않는다 → div + 확정 버튼 */
-    return `<${tag} class="best ${i === 1 ? "first" : ""}" ${admin ? "" : `aria-pressed="false" type="button"`} data-r="${r}">${inner}${admin ? `<button class="cta btn ${i === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}">이 시간으로 확정</button>` : ""}</${tag}>`; };
+  const bestSection = () => `<section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div id="best-banner"></div><div class="stack" id="best-list" style="gap:var(--s-2)"></div>${N > 1 ? `<div class="chips" role="group" aria-label="최소 길이" style="margin-top:var(--s-3)"><button class="chip" aria-pressed="false" data-f="1">30분 이상</button><button class="chip" aria-pressed="true" data-f="2">1시간 이상</button><button class="chip" aria-pressed="false" data-f="4">2시간 이상</button></div><p class="t-caption" id="best-cap" style="margin-top:8px" hidden>1시간 이상 겹치는 시간이 없어 30분 단위로 보여줘요</p>` : ""}</section>`;
+  function drawBest(admin, minL) {
+    const { list, fell } = best(minL), box = $("#best-list"); if (!box) return;
+    box.innerHTML = list.map((x) => card(x, admin)).join("") || `<p class="muted">겹치는 시간이 아직 없어요</p>`;
+    const cap = $("#best-cap"); if (cap) { cap.hidden = !fell; if (fell) cap.textContent = `${minL === 4 ? "2시간" : "1시간"} 이상 겹치는 시간이 없어 30분 단위로 보여줘요`; }
+    const maxC = list[0] ? list[0].c : 0, bn = $("#best-banner");
+    if (bn) bn.innerHTML = N > 1 && maxC < N ? `<div class="banner warning" style="margin-bottom:var(--s-3)">${icon("info")}<span>모두 되는 시간은 없어요. 가장 많이 되는 시간이에요</span></div>` : "";
+  }
+  const chipsHtml = (admin) => { const show = NAMES.slice(0, 6), more = N - show.length;
+    return `<div class="resp-chips" id="chips"><span class="count">${N}명 응답</span>${show.map((n) => `<button class="chip" aria-pressed="false" data-n="${n}">${n}</button>`).join("")}${more > 0 ? `<button class="chip" data-open="#sh-list">외 ${more}명</button>` : ""}${admin ? `<button class="chip" data-open="#sh-list" style="border-style:dashed">${icon("pencil")}&nbsp;응답 관리</button>` : ""}</div>`; };
   const cta = (t = "우리 모임도 이걸로 정하기") => `<div class="create-cta"><div><b>${t}</b><p>링크 하나면 10초면 끝나요</p></div><a class="btn secondary" href="new.html">새 약속 만들기</a></div>`;
-  const legend = (n) => `<div class="legend"><span>0명</span><span class="scale">${[0, 1, 2, 3, 4, 5].map((i) => `<i style="background:var(--heat-${i})"></i>`).join("")}</span><span>${n - 1}명</span><span class="all"><i></i>전원 가능</span></div>`;
+  const legend = (n) => `<div class="legend"><span>0명</span><span class="scale">${[0, 1, 2, 3, 4, 5].map((i) => `<i style="background:var(--heat-${i})"></i>`).join("")}</span><span>${Math.max(1, n - 1)}명</span><span class="all"><i></i>전원 가능</span></div>`;
   const heat = (id) => `<div id="${id}"></div>`;
-  const BEST5 = (admin) => `${best(1, "수 10/29 19:00–21:00", "5/5명", "0,19,21", admin, true)}${best(2, "목 10/30 10:00–12:00", `4/5명 · <span class="miss">민수 빠짐</span>`, "1,10,12", admin)}${best(3, "금 10/31 19:00–20:00", `4/5명 · <span class="miss">서연 빠짐</span>`, "2,19,20", admin)}`;
-  const filter = `<div class="chips" role="group" aria-label="최소 길이" style="margin-top:var(--s-3)"><button class="chip" aria-pressed="true" data-f>1시간 이상</button><button class="chip" aria-pressed="false" data-f>2시간 이상</button></div>`;
+  const bar = (inner) => `<div class="submit-bar"><div class="inner">${inner}</div></div>`;
+  const myEdit = bar(`<a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a>`);
+  /* Q-08: 총무 키 없는 기기 안내 */
+  const noKey = `<div class="foot-note"><span>총무라면 총무 링크로 들어오세요</span><button class="link-btn" data-open="#sh-key">총무 링크로 열기</button></div>`;
 
-  /* ---------- 화면 ---------- */
+  /* 날짜만 모드 샘플 (Q-04): [날짜, 요일, 돼요, 애매] — 점수 = 돼요 1 + 애매 0.5, 동률이면 돼요 수 → 이른 날짜 */
+  const DATES = [["11월 8일", "토", 5, 0], ["11월 9일", "일", 3, 2], ["11월 15일", "토", 4, 1], ["11월 16일", "일", 2, 1], ["11월 22일", "토", 4, 0], ["11월 23일", "일", 1, 2]];
+  const dscore = (r) => r[2] + r[3] * 0.5;
+  const dateRank = DATES.map((r, i) => ({ r, i })).sort((a, b) => dscore(b.r) - dscore(a.r) || b.r[2] - a.r[2] || a.i - b.i).slice(0, 3);
+  const dateCards = (admin) => dateRank.map(({ r }) => { const no = 5 - r[2] - r[3], rank = 1 + dateRank.filter((y) => dscore(y.r) > dscore(r)).length;
+    const who = `${no === 0 && r[3] === 0 ? `<span class="all-badge">${icon("check")}전원 가능</span>` : ""}돼요 ${r[2]} · 애매 ${r[3]}${no ? ` · <span class="miss">${no}명 불가</span>` : ""}`, when = `${r[0]} (${r[1]})`;
+    const body = `<span class="rank">${rank}</span><span><span class="when">${when}</span><span class="who">${who}</span></span>`;
+    return admin ? `<div class="best ${rank === 1 ? "first" : ""}">${body}<button class="cta btn ${rank === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}" data-c="${r[2] + r[3]}" data-date="1">이 날로 확정</button></div>` : `<div class="best ${rank === 1 ? "first" : ""}">${body}</div>`; }).join("");
+  const dateBars = `<div class="bars" role="list" aria-label="날짜별 응답">${DATES.map((r) => `<div class="bar-row ${dateRank[0].r === r ? "top" : ""}" role="listitem"><div class="d">${r[0]}<small>${r[1]}요일</small></div><div class="bar-track" aria-hidden="true"><i class="y" style="width:${r[2] * 20}%"></i><i class="m" style="width:${r[3] * 20}%"></i></div><div class="bar-num">돼요 ${r[2]} · 애매 ${r[3]}</div></div>`).join("")}</div><div class="legend" style="margin-top:12px"><span class="scale"><i style="background:var(--accent)"></i></span>돼요 <span class="scale"><i style="background:var(--heat-2)"></i></span>애매</div>`;
+
+  /* ================= 화면 ================= */
   const views = {
     /* SCR-05 이름 입력 */
     name: () => `${summary(3)}
@@ -85,91 +161,120 @@
       <div class="who-chips" style="margin-bottom:var(--s-6)"><span class="t-caption">이미 응답한 사람</span><span class="chip">지원</span><span class="chip">민수</span><span class="chip">서연</span></div>
       <div class="field"><label for="nm">이름 <span class="counter" id="nc" hidden></span></label>
         <input class="input" id="nm" name="nickname" maxlength="20" placeholder="예: 지원" autocomplete="nickname" spellcheck="false" aria-describedby="nh ne"><span class="hint" id="nh">별명도 괜찮아요</span>
-        <span class="err" id="ne" hidden>이미 있는 이름이에요. 본인이면 <a href="m.html?v=paint" style="text-decoration:underline;font-weight:700">이 이름으로 수정하기</a></span></div>
-      <div class="submit-bar"><div class="inner"><a class="btn primary lg block" id="go" href="m.html?v=${Q.get("mode") === "date" ? "dateonly" : "paint"}" aria-disabled="true">시간 고르기</a><span class="trust">로그인 없이 · 30초면 끝</span></div></div>`,
+        <span class="err" id="ne" hidden>이미 있는 이름이에요. 이름 뒤에 글자를 붙이거나 별명을 써 주세요</span></div>
+      <div class="submit-bar"><div class="inner"><a class="btn primary lg block" id="go" href="m.html?v=${Q.get("mode") === "date" ? "dateonly" : Q.get("mode") === "dow" ? "paint-dow" : "paint"}" aria-disabled="true">시간 고르기</a><span class="trust">로그인 없이 · 30초면 끝</span></div></div>`,
 
-    /* SCR-06 시간 칠하기 */
-    paint: () => `<div class="split"><div>
-      <div class="task"><h1 class="t-h2">되는 시간을 칠해 주세요</h1></div>
-      <div class="tools"><button class="btn secondary" id="all">전부 가능</button><button class="btn secondary" aria-pressed="false" id="oth">다른 사람 보기</button>
+    /* SCR-06 시간 칠하기 (+ 요일 모드 / 마감) */
+    paint: (o = {}) => `<div class="split"><div>
+      ${o.closed ? `<div class="banner warning" style="margin-block:var(--s-3)">${icon("warn")}<span>응답이 마감됐어요</span></div>` : ""}
+      <div class="task"><h1 class="t-h2">${o.closed ? "마감된 모임이에요" : "되는 시간을 칠해 주세요"}</h1>${o.dow ? `<p>매주 반복되는 요일·시간을 칠해 주세요</p>` : ""}</div>
+      <div class="tools"><button class="btn secondary" id="all" ${o.closed ? "disabled" : ""}>전부 가능</button><button class="btn secondary" aria-pressed="false" id="oth">다른 사람 보기</button>
         ${Q.get("alt") === "b" ? `<button class="btn secondary paint-toggle" aria-pressed="true" id="pt">${icon("pencil")} 칠하기 모드</button>` : ""}</div>
-      <div style="position:relative">${heat("g")}<div class="coach" id="coach" ${Q.get("coach") === "0" ? "hidden" : ""}><div class="finger"></div><b>누른 채로 쭉 내리면 한 번에 칠해져요</b></div></div>
-      <p class="tabs-note" style="margin-top:8px">${Q.get("alt") === "b" ? "칠하기 모드를 끄면 어디서나 스크롤돼요 (D-8 B안)" : "시간 숫자가 있는 왼쪽 줄을 밀면 스크롤돼요 (D-8 A안)"}</p></div>
-      <aside class="only-desktop"><div class="card mini stack"><b class="t-h2">지금까지 응답</b><p class="muted">3명이 응답했어요</p><div class="best first" style="pointer-events:none"><span class="rank">1</span><span><span class="when">수 19:00–21:00</span><span class="who">3/3명</span></span></div></div></aside></div>
-      <div class="submit-bar mobile-only-bar" id="bar"><div class="inner split"><span class="sum" id="sum" aria-live="polite">선택 <b>0</b>시간</span><button class="btn primary lg" id="go">되는 시간 없이 제출</button></div></div>`,
+      <div style="position:relative">${heat("g")}${o.closed ? "" : `<div class="coach" id="coach" ${Q.get("coach") === "0" ? "hidden" : ""}><div class="finger"></div><b>누른 채로 쭉 내리면 한 번에 칠해져요</b></div>`}</div></div>
+      <aside class="only-desktop"><div class="card mini stack"><b class="t-h2">지금까지 응답</b><p class="muted">3명이 응답했어요</p><div class="best first" style="pointer-events:none"><span class="rank">1</span><span><span class="when">수 10/29 19:00–21:00</span><span class="who">3/3명</span></span></div></div></aside></div>
+      ${o.closed ? bar(`<a class="btn primary lg block" href="m.html?v=result">결과 보기</a>`) : `<div class="submit-bar mobile-only-bar" id="bar"><div class="inner split"><span class="sum" id="sum" aria-live="polite">선택 <b>0</b>시간</span><button class="btn primary lg" id="go">되는 시간 없이 제출</button></div></div>`}`,
 
     /* SCR-06b 날짜만 */
     dateonly: () => `<div class="task"><h1 class="t-h2">되는 날을 골라 주세요</h1></div><div class="stack" id="dl">
       ${["11월 8일 (토)", "11월 9일 (일)", "11월 15일 (토)", "11월 16일 (일)", "11월 22일 (토)", "11월 23일 (일)"].map((d, i) => `<div class="date-choice"><div class="d">${d}</div><div class="opts"><button class="yes" aria-pressed="${i === 0}">돼요</button><button class="maybe" aria-pressed="${i === 2}">애매</button><button class="no" aria-pressed="false">안 돼요</button></div></div>`).join("")}</div>
-      <div class="submit-bar"><div class="inner split"><span class="sum" id="sum"><b>1</b>일 돼요</span><button class="btn primary lg" id="go">응답 제출</button></div></div>`,
+      <div class="submit-bar"><div class="inner split"><span class="sum" id="sum" aria-live="polite"><b>1</b>일 돼요</span><button class="btn primary lg" id="go">응답 제출</button></div></div>`,
 
-    /* SCR-07 결과 (기본) */
-    result: () => `<div class="only-mobile">${summary(5)}</div><div class="split af" style="margin-top:var(--s-4)">
-      <div class="stack-lg"><section><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${legend(5)}<div style="margin-top:var(--s-3)">${heat("g")}</div></section></div>
-      <aside class="stack-lg"><div class="only-desktop">${summary(5)}</div><section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="stack" style="gap:var(--s-2)">${BEST5(false)}</div>${filter}</section>${chips(Object.keys(LM.PEOPLE))}${cta()}</aside></div>
-      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+    /* SCR-07 결과 */
+    result: (o = {}) => `<div class="only-mobile">${summary(N, o.sum)}</div><div class="split af" style="margin-top:var(--s-4)">
+      <div class="stack-lg"><section><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${legend(N)}<div style="margin-top:var(--s-3)">${heat("g")}</div></section></div>
+      <aside class="stack-lg"><div class="only-desktop">${summary(N, o.sum)}</div>${bestSection()}${chipsHtml(false)}${cta()}${noKey}</aside></div>${myEdit}`,
 
-    "result-one": () => `${summary(1)}<div class="split af"><div>${legend(1)}<div style="margin-top:12px">${heat("g")}</div></div><aside class="stack-lg">${chips(["지원"])}
-      <section class="card stack" style="text-align:center;align-items:center;padding:var(--s-8) var(--s-4)"><p class="t-label">아직 1명만 응답했어요.<br>단톡방에 한 번 더 알려 볼까요?</p><button class="btn kakao lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 공유</button></section></aside></div>
-      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+    "result-date": () => `<div class="only-mobile">${summary(5, { dates: "11월 8일(토) ~ 23일(일)", noTime: 1 })}</div><div class="split af" style="margin-top:var(--s-4)">
+      <div class="stack-lg"><section><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${dateBars}</section></div>
+      <aside class="stack-lg"><div class="only-desktop">${summary(5, { dates: "11월 8일(토) ~ 23일(일)", noTime: 1 })}</div>
+        <section><div class="sec-title"><h2 class="t-h2">가장 좋은 날</h2></div><div class="stack" style="gap:var(--s-2)">${dateCards(false)}</div></section>
+        <div class="resp-chips"><span class="count">5명 응답</span>${Object.keys(D5).map((n) => `<span class="chip">${n}</span>`).join("")}</div>${cta()}${noKey}</aside></div>${myEdit}`,
 
-    "result-none": () => `${summary(3)}<div class="split af"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${legend(3)}<div style="margin-top:12px">${heat("g")}</div></div><aside class="stack-lg">${chips(["지원", "민수", "서연"])}
-      <section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="banner warning" style="margin-bottom:var(--s-3)">${icon("info")}<span>모두 되는 시간은 없어요. 가장 많이 되는 시간이에요</span></div>
-      <div class="stack" style="gap:var(--s-2)">${best(1, "수 10/29 19:00–21:00", `2/3명 · <span class="miss">서연 빠짐</span>`, "0,19,21")}${best(1, "목 10/30 10:00–12:00", `2/3명 · <span class="miss">민수 빠짐</span>`, "1,10,12")}<p class="t-caption">같은 인원이라 둘 다 1위로 보여줘요</p></div></section>${cta()}</aside></div>
-      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=paint">내 응답 수정</a></div></div>`,
+    "result-one": () => `${summary(1)}<div class="split af"><div>${legend(1)}<div style="margin-top:12px">${heat("g")}</div></div><aside class="stack-lg">${chipsHtml(false)}
+      <section class="card stack" style="text-align:center;align-items:center;padding:var(--s-8) var(--s-4)"><p class="t-label">아직 1명만 응답했어요.<br>단톡방에 한 번 더 알려 볼까요?</p><button class="btn kakao lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 공유</button></section></aside></div>${myEdit}`,
 
     /* SCR-08 총무 */
-    admin: () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div><p class="t-caption" style="margin-bottom:8px">칸을 길게 눌러 직접 시간을 골라 확정할 수도 있어요</p>${legend(3)}<div style="margin-top:12px">${heat("g")}</div></div>
-      <aside class="stack-lg"><div><h1 class="t-h1">3명 응답했어요</h1><div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div></div>
-      <section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div class="stack" style="gap:var(--s-2)">
-        ${best(1, "수 10/29 19:00–21:00", "3/3명", "0,19,21", true, true)}${best(2, "목 10/30 10:00–12:00", `2/3명 · <span class="miss">민수 빠짐</span>`, "1,10,12", true)}</div></section></aside></div>
-      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a></div></div>`,
+    admin: () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div><p class="t-caption" style="margin-bottom:8px">칸을 길게 눌러 직접 시간을 골라 확정할 수도 있어요</p>${legend(N)}<div style="margin-top:12px">${heat("g")}</div></div>
+      <aside class="stack-lg"><div><h1 class="t-h1">${N}명 응답했어요</h1>
+        ${CHANGE ? `<div class="banner info" style="margin-top:12px">${icon("info")}<span>확정 시간을 바꾸는 중이에요. 현재: 수 10/29 19:00–21:00</span></div>` : `<div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div>`}</div>
+        ${bestSection()}${chipsHtml(true)}</aside></div>${bar(`<a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a>`)}`,
+
+    "admin-date": () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${dateBars}</div>
+      <aside class="stack-lg"><div><h1 class="t-h1">5명 응답했어요</h1><div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div></div>
+        <section><div class="sec-title"><h2 class="t-h2">가장 좋은 날</h2></div><div class="stack" style="gap:var(--s-2)">${dateCards(true)}</div></section></aside></div>${bar(`<a class="btn secondary lg block" href="m.html?v=name&mode=date">나도 응답하기</a>`)}`,
 
     "admin-empty": () => `<div class="empty" style="padding-top:var(--s-16)"><svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22"/><path d="M44 28a22 22 0 0 1 0 32 22 22 0 0 1 0-32z" fill="currentColor" stroke="none" opacity=".25"/></svg>
       <h1 class="t-h1">아직 응답이 없어요</h1><p>단톡방에 링크를 보내면 응답이 하나씩 모여요</p>
-      <button class="btn kakao lg" style="width:100%;max-width:320px" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 카카오톡으로 보내기</button><button class="btn secondary" data-copy="링크를 복사했어요">링크 복사</button></div>
-      <div class="submit-bar"><div class="inner"><a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a></div></div>`,
+      <button class="btn kakao lg" style="width:100%;max-width:320px" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 카카오톡으로 보내기</button><button class="btn secondary" data-copy="링크를 복사했어요">링크 복사</button></div>${bar(`<a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a>`)}`,
 
     /* SCR-09 확정 */
     confirmed: (o = {}) => `<div class="narrow" style="margin:var(--s-6) auto 0"><div class="stack-lg">
-      ${o.past ? "" : ""}
       <div class="confirmed ${o.past ? "past" : ""}" id="cc"><div class="confetti" id="cf"></div>
         ${o.changed ? `<div class="changed">시간이 바뀌었어요 (이전: 목 10:00)</div>` : ""}
-        <span class="tag">${o.past ? "지난 모임이에요" : "🎉 확정됐어요"}</span><div class="name">팀플 회의</div><div class="date">10월 29일 수요일</div><div class="time t-confirm">오후 7:00 – 9:00</div>
-        <div class="count">${o.part ? "4명 가능 · 민수 불가" : "5명 중 5명 가능"}</div></div>
+        <span class="tag">${o.past ? "지난 모임이에요" : "🎉 확정됐어요"}</span><div class="name">팀플 회의</div><div class="date">${o.date || "10월 29일 수요일"}</div><div class="time t-confirm">${o.time || "오후 7:00 – 9:00"}</div>
+        <div class="count">${o.count || (N === 5 ? "5명 중 5명 가능" : "")}</div></div>
       <div class="stack" style="gap:var(--s-2)"><button class="btn primary lg block" data-open="#sh-cal">${icon("cal")} 캘린더에 추가</button>
-        <button class="btn ${o.admin ? "kakao" : "secondary"} lg block" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 알리기</button></div>
-      <p class="t-caption" style="text-align:center">응답 수정은 총무에게 요청하세요</p>
-      <details class="card"><summary class="t-label" style="cursor:pointer;min-height:32px;display:flex;align-items:center">응답 결과 보기</summary><div style="margin-top:12px">${legend(5)}<div style="margin-top:12px">${heat("g")}</div></div></details>
-      ${cta(o.past ? "다음 모임도 로미원으로" : "다음 모임도 로미원으로")}</div></div>`,
+        <button class="btn ${o.admin ? "kakao" : "secondary"} lg block" data-toast="${o.changed ? "바뀐 시간을 카카오톡으로 알려요 (시안)" : "카카오톡 공유 창이 열려요 (시안)"}">${icon("chat")} ${o.changed && o.admin ? "바뀐 시간 알리기" : "단톡방에 알리기"}</button></div>
+      ${o.admin ? "" : `<p class="t-caption" style="text-align:center">응답 수정은 총무에게 요청하세요</p>`}
+      <details class="card"><summary class="t-label" style="cursor:pointer;min-height:32px;display:flex;align-items:center">응답 결과 보기</summary><div style="margin-top:12px">${o.dateOnly ? dateBars : `${legend(N)}<div style="margin-top:12px">${heat("g")}</div>`}</div></details>
+      ${cta("다음 모임도 로미원으로")}</div></div>`,
+    loading: () => `<div class="summary"><span class="skeleton" style="height:28px;width:55%;margin-bottom:12px"></span><span class="skeleton" style="height:16px;width:80%"></span></div>
+      <div class="stack" style="gap:var(--s-2)"><span class="skeleton" style="height:76px"></span><span class="skeleton" style="height:64px"></span><span class="skeleton" style="height:64px"></span></div>
+      <span class="skeleton sk-grid" style="margin-top:var(--s-6)"></span><div class="submit-bar"><div class="inner"><button class="btn secondary lg block" disabled>불러오는 중</button></div></div>`,
   };
-  views["confirmed-part"] = () => views.confirmed({ part: 1 });
+  views["paint-dow"] = () => views.paint({ dow: 1 });
+  views["paint-closed"] = () => views.paint({ closed: 1 });
+  views["result-none"] = views["result-short"] = views["result-many"] = () => views.result();
+  views["result-dow"] = () => views.result({ sum: { dates: "매주 월~일 중" } });
+  views["admin-many"] = views.admin;
+  views["confirmed-part"] = () => views.confirmed({ count: "4명 가능 · 민수 불가" });
   views["confirmed-changed"] = () => views.confirmed({ changed: 1 });
+  views["confirmed-changed-admin"] = () => views.confirmed({ changed: 1, admin: 1 });
   views["confirmed-admin"] = () => views.confirmed({ admin: 1 });
+  views["confirmed-date"] = () => views.confirmed({ date: "11월 8일 토요일", time: "하루 종일", count: "5명 중 5명 가능", dateOnly: 1, admin: IS_ADMIN });
+  views["confirmed-dow"] = () => views.confirmed({ date: "매주 수요일", time: "오후 7:00 – 9:00", count: "5명 중 5명 가능" });
   views.past = () => views.confirmed({ past: 1 });
 
-  if (V === "name" || V === "dateonly" || V === "admin-empty" || V.startsWith("confirmed") || V === "past") app.dataset.narrow = "1";
+  if (["name", "dateonly", "admin-empty", "loading", "paint-closed", ...CNF].includes(V)) app.dataset.narrow = "1";
   app.innerHTML = (views[V] || views.result)();
-  fixRight();
 
-  /* ---------- 시트들 (C-15) ---------- */
-  const sheets = `
-  <div class="sheet" id="sh-confirm" role="dialog" aria-modal="true" aria-labelledby="c-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="c-t">수 10/29 19:00–21:00로 확정할까요?</h2><p class="muted" id="c-s">3명 중 3명 가능</p><div class="modal-btns"><a class="btn primary lg" href="m.html?v=confirmed-admin">확정하기</a><button class="btn ghost" data-close>취소</button></div></div></div>
-  <div class="sheet" id="sh-menu" role="dialog" aria-modal="true" aria-label="메뉴"><div class="handle"></div><div class="menu">
-    ${V === "confirmed-admin" ? `<button data-open="#sh-uncf">${icon("back")} 확정 취소</button>` : ""}
-    ${V.startsWith("result") ? `<button data-copy="링크를 복사했어요">${icon("link")} 링크 복사</button>` : `<button data-toast="모임 수정 화면으로 이동해요">${icon("pencil")} 모임 수정 (이름·날짜 추가)</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`}
-    <button data-close>닫기</button></div></div>
+  /* 헤더 우측 액션 */
+  const nav = document.querySelector(".site-header nav"), k = kindOf();
+  if (nav) {
+    if (k === "me") nav.innerHTML = `<button class="link-btn" data-open="#sh-name" style="gap:4px">지원 ${icon("pencil")}</button>`;
+    if (k === "share") nav.innerHTML = `<button class="icon-btn" data-copy="링크를 복사했어요" aria-label="공유">${icon("share")}</button><button class="icon-btn" data-open="#sh-menu" aria-label="더보기">${icon("more")}</button>`;
+    if (k === "admin" || k === "more") nav.innerHTML = `<span class="badge admin">총무</span><button class="icon-btn" data-open="#sh-menu" aria-label="${k === "more" ? "관리 메뉴" : "더보기"}">${icon("more")}</button>`;
+  }
+
+  /* ================= 시트 (C-15) ================= */
+  const times = []; for (let m = 6 * 60; m <= 23 * 60 + 30; m += 30) times.push(`${String(Math.floor(m / 60)).padStart(2, "0")}:${m % 60 ? "30" : "00"}`);
+  const created = ["10/27 21:14", "10/27 21:31", "10/27 22:05", "10/28 08:47", "10/28 09:12"];
+  const listRows = NAMES.map((n, i) => `<li><button class="nm" data-n="${n}"><b>${n}</b><small>${created[i % 5]} 응답</small></button>${IS_ADMIN ? `<button class="btn secondary" data-open="#sh-delr" data-who="${n}">응답 삭제</button>` : ""}</li>`).join("");
+  const menu = V === "confirmed-admin" || V === "confirmed-changed-admin"
+    ? `<a class="menu-item" href="m.html?v=admin&change=1">${icon("clock")} 확정 시간 바꾸기</a><button data-open="#sh-uncf">${icon("back")} 확정 취소</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`
+    : RES.includes(V) ? `<button data-copy="링크를 복사했어요">${icon("link")} 링크 복사</button>`
+    : `<button data-toast="모임 수정 화면으로 이동해요">${icon("pencil")} 모임 수정 (이름·날짜 추가)</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`;
+  const okHref = V === "admin-date" ? "m.html?v=confirmed-date&admin=1" : CHANGE ? "m.html?v=confirmed-changed-admin" : "m.html?v=confirmed-admin";
+  document.body.insertAdjacentHTML("beforeend", `
+  <div class="sheet" id="sh-confirm" role="dialog" aria-modal="true" aria-labelledby="c-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="c-t">수 10/29 19:00–21:00로 확정할까요?</h2><p class="muted" id="c-s"></p>
+    ${V === "admin-date" ? `<div class="field"><label for="ct">시간 <span class="opt">(선택)</span></label><select class="select" id="ct"><option>하루 종일</option>${times.map((t) => `<option>${t}</option>`).join("")}</select><span class="hint">시간은 나중에 바꿀 수 있어요</span></div>` : ""}
+    <div class="modal-btns"><a class="btn primary lg" href="${okHref}">${CHANGE ? "시간 바꾸기" : "확정하기"}</a><button class="btn ghost" data-close>취소</button></div></div></div>
+  <div class="sheet" id="sh-menu" role="dialog" aria-modal="true" aria-label="메뉴"><div class="handle"></div><div class="menu">${menu}<button data-close>닫기</button></div></div>
   <div class="sheet" id="sh-del" role="alertdialog" aria-modal="true" aria-labelledby="d-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="d-t">모임을 삭제할까요?</h2><p class="muted">삭제하면 응답이 모두 지워지고 되돌릴 수 없어요.</p><div class="modal-btns"><button class="btn danger lg" data-toast="삭제했어요">삭제하기</button><button class="btn ghost" data-close>취소</button></div></div></div>
   <div class="sheet" id="sh-uncf" role="alertdialog" aria-modal="true" aria-labelledby="u-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="u-t">확정을 취소할까요?</h2><p class="muted">취소하면 다시 응답을 받고, 새로 확정할 수 있어요.</p><div class="modal-btns"><a class="btn danger lg" href="m.html?v=admin&toast=uncf">확정 취소하기</a><button class="btn ghost" data-close>돌아가기</button></div></div></div>
-  <div class="sheet" id="sh-cal" role="dialog" aria-modal="true" aria-label="캘린더에 추가"><div class="handle"></div><div class="menu"><button data-toast="일정 파일(.ics)을 내려받아요">${icon("cal")} 기본 캘린더 (.ics)</button><button data-toast="구글 캘린더가 열려요">${icon("cal")} 구글 캘린더</button>
+  <div class="sheet" id="sh-cal" role="dialog" aria-modal="true" aria-label="캘린더에 추가"><div class="handle"></div><div class="menu"><button data-toast="${isDow ? "매주 반복 일정 파일(.ics)을 내려받아요" : "일정 파일(.ics)을 내려받아요"}">${icon("cal")} 기본 캘린더 (.ics)${isDow ? " · 매주 반복" : ""}</button><button data-toast="구글 캘린더가 열려요">${icon("cal")} 구글 캘린더${isDow ? " · 매주 반복" : ""}</button>
     <div class="banner info" style="margin-top:12px">${icon("info")}<span>카카오톡 안에서는 일정 파일이 열리지 않을 수 있어요. 열리지 않으면 ⋯ → 다른 브라우저로 열기를 눌러 주세요.</span></div></div></div>
-  <div class="sheet" id="sh-name" role="dialog" aria-modal="true" aria-labelledby="n-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="n-t">이름 수정</h2><div class="field"><label for="n2">이름</label><input class="input" id="n2" name="nickname" value="지원" maxlength="20" autocomplete="nickname" spellcheck="false"></div><div class="modal-btns"><button class="btn primary lg" data-close>저장</button></div></div></div>`;
-  document.body.insertAdjacentHTML("beforeend", sheets);
+  <div class="sheet" id="sh-name" role="dialog" aria-modal="true" aria-labelledby="n-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="n-t">이름 수정</h2><div class="field"><label for="n2">이름</label><input class="input" id="n2" name="nickname" value="지원" maxlength="20" autocomplete="nickname" spellcheck="false"></div><div class="modal-btns"><button class="btn primary lg" data-close>저장</button></div></div></div>
+  <div class="sheet" id="sh-list" role="dialog" aria-modal="true" aria-labelledby="l-t"><div class="handle"></div><div class="stack" style="gap:var(--s-2)"><h2 class="t-h2" id="l-t">응답한 사람 ${N}명</h2><p class="t-caption">${IS_ADMIN ? "이름을 누르면 그 사람의 시간만 보여줘요. 잘못 들어온 응답은 지울 수 있어요." : "이름을 누르면 그 사람의 시간만 진하게 보여줘요."}</p><ul class="rl" style="padding:0;margin:0">${listRows}</ul></div></div>
+  <div class="sheet" id="sh-delr" role="alertdialog" aria-modal="true" aria-labelledby="dr-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="dr-t">응답을 지울까요?</h2><p class="muted">되돌릴 수 없어요.</p><div class="modal-btns"><button class="btn danger lg" id="dr-go">응답 지우기</button><button class="btn ghost" data-close>취소</button></div></div></div>
+  <div class="sheet" id="sh-key" role="dialog" aria-modal="true" aria-labelledby="k-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="k-t">총무 링크로 열기</h2><div class="field"><label for="kl">총무 링크</label><input class="input" id="kl" name="admin-link" type="url" inputmode="url" placeholder="lomeone.com/m/…?key=…" autocomplete="off" spellcheck="false"><span class="hint">만들 때 저장해 둔 총무 링크를 붙여 넣어 주세요</span></div><div class="modal-btns"><a class="btn primary lg" href="m.html?v=admin">총무로 열기</a><button class="btn ghost" data-close>취소</button></div></div></div>`);
 
-  /* ---------- 동작 ---------- */
-  const $ = (s) => document.querySelector(s);
-  // 확정 시트 문구 (총무가 누른 카드에 따라)
-  document.addEventListener("click", (e) => { const b = e.target.closest("[data-when]"); if (b) { $("#c-t").textContent = b.dataset.when + "로 확정할까요?"; $("#c-s").textContent = V === "admin" ? (b.dataset.when.startsWith("수") ? "3명 중 3명 가능" : "3명 중 2명 가능") : ""; e.stopPropagation(); } }, true);
+  /* ================= 동작 ================= */
+  document.addEventListener("click", (e) => {   // 확정 시트 문구 / 응답 삭제 대상
+    const b = e.target.closest("[data-when]"); if (b) { $("#c-t").textContent = b.dataset.when + (CHANGE ? "로 바꿀까요?" : "로 확정할까요?"); $("#c-s").textContent = `${b.dataset.date ? 5 : N}명 중 ${b.dataset.c}명 가능`; }
+    const w = e.target.closest("[data-who]"); if (w) { $("#dr-t").textContent = `${w.dataset.who}의 응답을 지울까요?`; $("#dr-go").dataset.who = w.dataset.who; }
+  }, true);
+  $("#dr-go").addEventListener("click", (e) => { closeSheets(true); toast(`${e.currentTarget.dataset.who}의 응답을 지웠어요`); });
 
   if (V === "name") {
     const nm = $("#nm"), go = $("#go");
@@ -178,47 +283,58 @@
       $("#nc").hidden = l < 15; $("#nc").textContent = l + "/20"; $("#ne").hidden = !dup; $("#nh").hidden = dup; nm.setAttribute("aria-invalid", dup);
       go.setAttribute("aria-disabled", !v || dup);
     });
-    go.addEventListener("click", (e) => { if (go.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+    go.addEventListener("click", (e) => { if (go.getAttribute("aria-disabled") === "true") { e.preventDefault(); toast(nm.value.trim() ? "이미 있는 이름이에요" : "이름을 입력해 주세요"); } });
   }
 
-  const g = $("#g");
-  if (V === "paint" && g) {
-    LM.buildGrid(g, { mode: "input", days, from: 9, to: 23 });
+  const g = $("#g"), PAINT = ["paint", "paint-dow", "paint-closed"].includes(V);
+  if (PAINT && g) {
+    LM.buildGrid(g, { mode: "input", days: GRID.days, from: 9, to: 23, dow: isDow, closed: V === "paint-closed" });
     const upd = () => { const n = g.api.count(), h = n / 2; $("#sum").innerHTML = `선택 <b>${h}</b>시간`; $("#go").textContent = n ? "응답 제출" : "되는 시간 없이 제출"; };
-    g.addEventListener("slotchange", upd);
-    $("#coach").addEventListener("pointerdown", (e) => { e.currentTarget.hidden = true; });
-    let all = false; $("#all").addEventListener("click", (e) => { all = !all; g.api.fillAll(all); e.currentTarget.textContent = all ? "전부 지우기" : "전부 가능"; });
+    if (V !== "paint-closed") {
+      g.addEventListener("slotchange", upd);
+      const co = $("#coach"); co && co.addEventListener("pointerdown", (e) => { e.currentTarget.hidden = true; });
+      let all = false; $("#all").addEventListener("click", (e) => { all = !all; g.api.fillAll(all); e.currentTarget.textContent = all ? "전부 지우기" : "전부 가능"; });
+      if (Q.get("filled") !== "0") g.api.preset(isDow ? [[2, 19, 21], [4, 19, 21], [3, 10, 12]] : [[0, 19, 21], [2, 19, 21], [1, 10, 12]]);
+      if (Q.get("filled") === "0") upd();
+      const pt = $("#pt"); if (pt) pt.addEventListener("click", () => { const on = pt.getAttribute("aria-pressed") !== "true"; pt.setAttribute("aria-pressed", on); g.classList.toggle("paint-off", !on); });
+      $("#go").addEventListener("click", (e) => { e.currentTarget.classList.add("loading"); setTimeout(() => { location.href = "m.html?v=result&toast=1"; }, 700); });
+    } else g.api.preset([[0, 19, 21], [2, 19, 21], [1, 10, 12]]);
     $("#oth").addEventListener("click", (e) => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", on); g.classList.toggle("show-others", on); });
-    if (Q.get("filled") !== "0") g.api.preset([[0, 19, 21], [2, 19, 21], [1, 10, 12]]);   // 일부 칠함 상태가 기본 (빈 상태: ?filled=0)
-    if (Q.get("filled") === "0") upd();
-    const pt = $("#pt"); if (pt) pt.addEventListener("click", () => { const on = pt.getAttribute("aria-pressed") !== "true"; pt.setAttribute("aria-pressed", on); g.classList.toggle("paint-off", !on); });
-    $("#go").addEventListener("click", (e) => { const b = e.currentTarget; b.classList.add("loading"); setTimeout(() => { location.href = "m.html?v=result&toast=1"; }, 700); });
   }
   if (V === "dateonly") {
     app.addEventListener("click", (e) => {
       const b = e.target.closest(".opts button"); if (!b) return; b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", x === b));
       $("#sum").innerHTML = `<b>${app.querySelectorAll(".yes[aria-pressed=true]").length}</b>일 돼요`;
     });
-    $("#go").addEventListener("click", () => (location.href = "m.html?v=result&toast=1"));
+    $("#go").addEventListener("click", () => (location.href = "m.html?v=result-date&toast=1"));
   }
-  if (g && V.startsWith("result") || V === "admin" || V.startsWith("confirmed") || V === "past") {
-    const data = V === "result-none" ? { 지원: [[[19, 21]], [[10, 12]], []], 민수: [[[19, 21]], [], []], 서연: [[], [[10, 12]], []] } : V === "result-one" ? { 지원: LM.PEOPLE.지원 } : V === "admin" ? { 지원: LM.PEOPLE.지원, 서연: LM.PEOPLE.서연, 하준: LM.PEOPLE.하준 } : undefined;
-    if (g) LM.buildGrid(g, { mode: "heatmap", days: 3, from: 9, to: 23, data });
-    const chipsEl = $("#chips"); if (chipsEl) chipsEl.addEventListener("click", (e) => {
-      const c = e.target.closest(".chip"); if (!c) return; const on = c.getAttribute("aria-pressed") !== "true";
-      chipsEl.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", "false")); c.setAttribute("aria-pressed", on); g.api.person(on ? c.dataset.n : null);
-    });
+
+  const hasHeat = !!g && !PAINT;
+  if (hasHeat) {
+    LM.buildGrid(g, { mode: "heatmap", days: GRID.days, from: 9, to: 23, data: DATA, dow: isDow, scrollTo: 18.5 });   // 정답 구간(19시)이 첫 화면 안에 오도록
+    const chipsEl = $("#chips");
+    const setPerson = (n, on) => { g.api.person(on ? n : null); if (chipsEl) chipsEl.querySelectorAll(".chip[data-n]").forEach((x) => x.setAttribute("aria-pressed", on && x.dataset.n === n)); };
+    if (chipsEl) chipsEl.addEventListener("click", (e) => { const c = e.target.closest(".chip[data-n]"); if (!c) return; setPerson(c.dataset.n, c.getAttribute("aria-pressed") !== "true"); });
+    $("#sh-list").addEventListener("click", (e) => { const c = e.target.closest("button.nm"); if (!c) return; closeSheets(); setPerson(c.dataset.n, true); });   // S-06: 탭 → 하이라이트하고 시트 닫힘
+  }
+  if ($("#best-list")) {
+    let minL = 2; const draw = () => drawBest(IS_ADMIN, minL); draw();
+    app.querySelectorAll("[data-f]").forEach((f) => f.addEventListener("click", () => { minL = +f.dataset.f; app.querySelectorAll("[data-f]").forEach((x) => x.setAttribute("aria-pressed", x === f)); draw(); }));
     app.addEventListener("click", (e) => {
-      const b = e.target.closest("button.best"); if (!b) return; const on = b.getAttribute("aria-pressed") !== "true";
-      app.querySelectorAll(".best").forEach((x) => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", on);
+      const b = e.target.closest("button.best"); if (!b || !hasHeat) return; const on = b.getAttribute("aria-pressed") !== "true";
+      app.querySelectorAll("button.best").forEach((x) => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", on);
       const [d, a, z] = b.dataset.r.split(",").map(Number); g.api.range(on ? d : null, a, z);
     });
-    app.querySelectorAll("[data-f]").forEach((f) => f.addEventListener("click", () => { app.querySelectorAll("[data-f]").forEach((x) => x.setAttribute("aria-pressed", x === f)); toast("최소 길이 " + f.textContent + "으로 다시 계산했어요"); }));
   }
-  if (V.startsWith("confirmed") || V === "past") { if (V !== "past") confetti($("#cf")); }
-  if (Q.get("toast")) setTimeout(() => toast(Q.get("toast") === "uncf" ? "확정을 취소했어요" : "응답을 보냈어요"), 250);
-  if (Q.get("sheet")) setTimeout(() => openSheet({ confirm: "#sh-confirm", menu: "#sh-menu", delete: "#sh-del", cal: "#sh-cal", uncf: "#sh-uncf" }[Q.get("sheet")] || ""), 150);
-  if (Q.get("sheet") === "confirm") { $("#c-t").textContent = "수 10/29 19:00–21:00로 확정할까요?"; $("#c-s").textContent = "3명 중 3명 가능"; }
+  if (CNF.includes(V) && V !== "past") confetti($("#cf"));
+  if (Q.get("toast")) setTimeout(() => (Q.get("toast") === "uncf" ? toast("확정을 취소했어요. 단톡방에 알릴까요?", { label: "알리기" }) : toast("응답을 보냈어요")), 250);
+  if (Q.get("sheet")) setTimeout(() => {
+    const id = { confirm: "#sh-confirm", menu: "#sh-menu", delete: "#sh-del", cal: "#sh-cal", uncf: "#sh-uncf", list: "#sh-list", key: "#sh-key", delr: "#sh-delr" }[Q.get("sheet")];
+    if (!id) return;
+    if (id === "#sh-confirm") { const f = app.querySelector("[data-when]"); if (f) { $("#c-t").textContent = f.dataset.when + (CHANGE ? "로 바꿀까요?" : "로 확정할까요?"); $("#c-s").textContent = `${f.dataset.date ? 5 : N}명 중 ${f.dataset.c}명 가능`; } }
+    if (id === "#sh-delr") { $("#dr-t").textContent = "지원의 응답을 지울까요?"; $("#dr-go").dataset.who = "지원"; }
+    openSheet(id);
+  }, 150);
 })();
 </script>
 </body>

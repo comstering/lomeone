@@ -30,8 +30,8 @@
 
 | 파일 | ID | 내용 | 상태 |
 | --- | --- | --- | --- |
-| [lomeone-00-service-master-prd.md](lomeone-00-service-master-prd.md) | LM-PRD-00 | 서비스 전체 기획: 원칙 PR-1~8 · 브랜드(로미원) · 사용자 · 게이트·가설 H-1~5 · SC-01~16 · IA · 기능 F-01~21 · 성장 모델 · 로드맵 | ✅ v1.0 (2026-10-28) |
-| [lomeone-01-mvp-web-design-prd.md](lomeone-01-mvp-web-design-prd.md) | LM-PRD-01 | 1단계 웹디자인 기획서: 화면 SCR-01~14 · 컴포넌트 C-01~32 · 디자인 시스템 요구사항 · 문구 · 산출물·QA | ✅ v1.0 (2026-10-28) |
+| [lomeone-00-service-master-prd.md](lomeone-00-service-master-prd.md) | LM-PRD-00 | 서비스 전체 기획: 원칙 PR-1~8 · 브랜드(로미원) · 사용자 · 게이트·가설 H-1~5 · SC-01~16 · IA · 기능 F-01~21 · 성장 모델 · 로드맵 | ✅ v1.1 (2026-10-29) |
+| [lomeone-01-mvp-web-design-prd.md](lomeone-01-mvp-web-design-prd.md) | LM-PRD-01 | 1단계 웹디자인 기획서: 화면 SCR-01~14 · 컴포넌트 C-01~32 · 디자인 시스템 요구사항 · 문구 · 산출물·QA | ✅ v1.1 (2026-10-29) |
 | lomeone-02-mvp-dev-prd.md | LM-PRD-02 | 1단계 개발 명세: API·DB·추천 알고리즘·유저 스토리 | 예정 (스택 결정 D-2 후) |
 | lomeone-20-random-tools-prd.md | LM-PRD-20 | 사다리·팀 나누기·돌림판·자리배치 | 예정 (3개월차) |
 | lomeone-30-rolling-paper-prd.md | LM-PRD-30 | 롤링페이퍼·신고·필터 | 예정 (6개월차) |

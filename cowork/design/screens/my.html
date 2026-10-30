@@ -12,11 +12,11 @@
 <div class="page">
   <div data-header="default"></div>
   <main class="wrap narrow section stack-lg">
-    <div><h1 class="t-h1">내 모임</h1><p class="muted" style="margin-top:4px">이 기기에 저장된 모임이에요</p></div>
+    <div><h1 class="t-h1">내 모임</h1><p class="muted" style="margin-top:4px">이 브라우저에 저장된 모임이에요. 카카오톡과 사파리처럼 다른 브라우저에서 연 모임은 따로 보여요</p></div>
     <div class="seg" role="tablist" id="tabs"><button role="tab" aria-checked="true" data-t="mine">만든 모임</button><button role="tab" aria-checked="false" data-t="joined">응답한 모임</button></div>
     <div class="stack" id="list"></div>
     <a class="btn primary lg block" href="new.html" id="new">새 약속 만들기</a>
-    <p class="t-caption" style="text-align:center" id="note">다른 기기에서 만든 모임은 총무 링크로 열어 주세요</p>
+    <p class="t-caption" style="text-align:center" id="note">다른 기기·브라우저에서 만든 모임은 총무 링크로 열어 주세요</p>
   </main>
   <div data-footer></div>
 </div>
@@ -31,11 +31,11 @@
   };
   function draw(t) {
     const rows = Q.get("empty") ? [] : data[t];
-    L.innerHTML = rows.length ? rows.join("") : `<div class="empty"><svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22"/></svg><h2 class="t-h2">아직 ${t === "mine" ? "만든" : "응답한"} 모임이 없어요</h2><p>${t === "mine" ? "링크를 만들어 단톡방에 보내 보세요" : "받은 링크로 응답하면 여기에 모여요"}</p>${t === "mine" ? '<a class="btn primary" href="new.html">약속 만들기</a>' : ""}</div>`;
+    L.innerHTML = rows.length ? rows.join("") : `<div class="empty"><svg class="art" viewBox="0 0 88 88" fill="none" stroke="currentColor" stroke-width="3"><circle cx="34" cy="44" r="22"/><circle cx="54" cy="44" r="22"/></svg><h2 class="t-h2">아직 ${t === "mine" ? "만든" : "응답한"} 모임이 없어요</h2><p>${t === "mine" ? "링크를 만들어 단톡방에 보내 보세요" : "받은 링크로 응답하면 여기에 모여요"}</p><p class="t-caption" style="max-width:32ch">다른 기기·브라우저에서 만든 모임은 총무 링크로 열어 주세요</p>${t === "mine" ? '<a class="btn primary" href="new.html">약속 만들기</a>' : ""}</div>`;
     if (Q.get("empty")) { document.getElementById("new").hidden = true; }
   }
   document.getElementById("tabs").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; document.querySelectorAll("#tabs button").forEach((x) => x.setAttribute("aria-checked", x === b)); draw(b.dataset.t); });
-  draw("mine");
+  if (Q.get("loading")) { L.innerHTML = `<span class="skeleton" style="height:76px"></span><span class="skeleton" style="height:76px"></span><span class="skeleton" style="height:76px"></span>`; } else draw("mine");
 </script>
 </body>
 </html>

@@ -29,21 +29,22 @@
   <main class="wrap">
     <section>
       <h1 class="t-h1">브랜드 · 토큰 · 컴포넌트 시트</h1>
-      <p class="muted">PRD §2·§7·§8 기준 시안. 우측 상단 스위치로 브랜드 색 2안(D-5)과 라이트/다크를 바꿔 볼 수 있어요.</p>
+      <p class="muted">PRD §2·§7·§8 기준 시안. 브랜드는 D-5 확정(민트 틸 + 겹친 두 원). 아래 스위치로 라이트/다크를 바꿔 볼 수 있어요.</p>
       <div class="switch" style="margin-top:var(--s-4)">
-        <button class="chip" onclick="lmPrefs('brand','a')">색 A안 · 민트 틸</button><button class="chip" onclick="lmPrefs('brand','b')">색 B안 · 코발트</button>
         <button class="chip" onclick="lmPrefs('theme','light')">라이트</button><button class="chip" onclick="lmPrefs('theme','dark')">다크</button><button class="chip" onclick="lmPrefs('theme','auto')">시스템</button>
       </div>
     </section>
 
-    <section><h2 class="t-h1">1. 로고 (D-5 · 디자이너 제안 2안)</h2>
+    <section><h2 class="t-h1">1. 로고 (D-5 확정: 겹친 두 원)</h2>
       <div class="logos">
-        <div class="logo-card"><b>A안 · 겹친 두 원 (권장)</b><img src="../assets/logo/symbol-a.svg" width="96" height="96" alt=""><img src="../assets/logo/wordmark-lockup-a.svg" width="260" height="47" alt="lomeone 로미원"><p class="muted" style="font-size:14px">두 개의 <b>o</b>가 겹치는 자리가 "모두 되는 시간". 달력·시계를 쓰지 않아 2단계 도구로 확장해도 맞아요.</p></div>
-        <div class="logo-card"><b>B안 · 채워지는 칸</b><img src="../assets/logo/symbol-b.svg" width="96" height="96" alt=""><p class="muted" style="font-size:14px">시간 칸이 채워지고 한 칸이 "전원"이 되는 모양. 약속 기능과 직접 연결되지만 2단계 도구와는 덜 어울려요.</p></div>
-        <div class="logo-card dark"><b>다크 배경</b><div class="logo" style="color:#fff" id="dk"></div><p style="font-size:14px;opacity:.8">심볼은 다크에서 밝은 틴트 (--accent 다크값)</p></div>
+        <div class="logo-card"><b>컬러 · 조합형</b><img src="../assets/logo/symbol-a.svg" width="96" height="96" alt=""><img src="../assets/logo/wordmark-lockup-a.svg" width="260" height="47" alt="lomeone 로미원"><p class="muted" style="font-size:14px">두 개의 <b>o</b>가 겹치는 자리가 "모두 되는 시간". 달력·시계를 쓰지 않아 2단계 도구로 확장해도 맞아요.</p></div>
+        <div class="logo-card"><b>단색 검정</b><img src="../assets/logo/symbol-black.svg" width="64" height="64" alt=""><img src="../assets/logo/wordmark-lockup-black.svg" width="260" height="47" alt="lomeone 로미원 (단색)"></div>
+        <div class="logo-card dark"><b>다크 배경 · 컬러</b><img src="../assets/logo/symbol-dark.svg" width="64" height="64" alt=""><img src="../assets/logo/wordmark-lockup-dark.svg" width="260" height="47" alt="lomeone 로미원 (다크)"></div>
+        <div class="logo-card dark"><b>단색 흰색</b><img src="../assets/logo/symbol-white.svg" width="64" height="64" alt=""><img src="../assets/logo/wordmark-lockup-white.svg" width="260" height="47" alt="lomeone 로미원 (흰색)"></div>
       </div>
-      <h3>크기 대응 (DAC-10)</h3>
+      <h3>크기 대응 (DAC-10) · 파비콘</h3>
       <div class="sizes" id="sizes"></div>
+      <div class="row" style="gap:var(--s-4);margin-top:var(--s-3);flex-wrap:wrap"><div class="stack" style="align-items:center;gap:4px"><img src="../assets/favicon/favicon-16.png" width="16" height="16" alt=""><span class="t-caption">16</span></div><div class="stack" style="align-items:center;gap:4px"><img src="../assets/favicon/favicon-32.png" width="32" height="32" alt=""><span class="t-caption">32</span></div><div class="stack" style="align-items:center;gap:4px"><img src="../assets/favicon/apple-touch-icon.png" width="90" height="90" alt="" style="border-radius:20px;border:1px solid var(--border)"><span class="t-caption">180 홈 화면</span></div></div>
     </section>
 
     <section><h2 class="t-h1">2. 색상 토큰 (§7.2)</h2><div class="sw" id="sw"></div>
@@ -64,7 +65,7 @@
           <button class="btn kakao lg block">💬 카카오톡으로 보내기 (kakao)</button><button class="btn primary lg block">링크 만들기 (lg 52px)</button></div></div>
         <div><h3>C-04 TextField</h3><div class="stack">
           <div class="field"><label>이름 <span class="counter">3/20</span></label><input class="input" placeholder="예: 지원"><span class="hint">별명도 괜찮아요</span></div>
-          <div class="field"><label>이름</label><input class="input" value="민수" aria-invalid="true"><span class="err">이미 있는 이름이에요. 본인이면 이 이름으로 수정하기</span></div>
+          <div class="field"><label>이름</label><input class="input" value="민수" aria-invalid="true"><span class="err">이미 있는 이름이에요. 이름 뒤에 글자를 붙이거나 별명을 써 주세요</span></div>
           <div class="field"><label>이름</label><input class="input" value="가나다라마바사아자차카타파하가나다라" ><span class="hint">최장 20자 케이스</span></div></div></div>
         <div><h3>C-22 StatusBadge · C-11 Chips</h3><div class="rowwrap"><span class="badge progress">응답 중</span><span class="badge confirmed">확정</span><span class="badge expired">만료</span><span class="badge admin">총무</span></div>
           <div class="resp-chips" style="margin-top:12px"><span class="count">5명 응답</span><button class="chip" aria-pressed="false">지원</button><button class="chip" aria-pressed="true">민수</button><button class="chip">서연</button></div>
@@ -83,7 +84,10 @@
       <div class="spec"><div><div class="lbl-state">input (칠하기: 눌러서 드래그해 보세요)</div><div id="gi"></div></div><div><div class="lbl-state">heatmap (칸을 탭하면 말풍선)</div><div id="gh"></div><div style="margin-top:8px" id="lg2"></div></div></div>
     </section>
 
-    <section><h2 class="t-h1">5. 아이콘 (24px · 선 1.75px)</h2><div class="rowwrap" id="icons"></div>
+    <section><h2 class="t-h1">5. 아이콘</h2>
+      <h3>기능 아이콘 6종 (PRD §2.4) · 선 2.25px · 둥근 끝 · 채움 1톤</h3><div class="rowwrap" id="feat" style="gap:var(--s-6)"></div>
+      <p class="muted" style="margin-top:8px">1단계는 "약속"만 쓰고 나머지 4종은 홈 "곧 나와요", 롤링페이퍼는 3단계용. 같은 선 굵기·48px 그리드로 확장해요.</p>
+      <h3>UI 아이콘 (24px · 선 1.75px)</h3><div class="rowwrap" id="icons"></div>
       <p class="muted" style="margin-top:12px">기능 아이콘 6종(약속·사다리·팀나누기·돌림판·자리배치·롤링페이퍼)은 같은 선 굵기·둥근 끝·2색(선 + --accent-subtle 채움) 원칙으로 2단계에서 확장 (제안만, 1단계는 약속만 사용).</p></section>
   </main>
   <div data-footer></div>
@@ -99,11 +103,11 @@
   paint(); new MutationObserver(paint).observe(document.documentElement, { attributes: true });
   const lg = `<span>0명</span><span class="scale">${[0, 1, 2, 3, 4, 5].map((i) => `<i style="background:var(--heat-${i})"></i>`).join("")}</span><span>4명</span><span class="all"><i></i>전원 가능 (색 + 테두리 + 줄무늬)</span>`;
   document.getElementById("lg").innerHTML = lg; document.getElementById("lg2").innerHTML = `<div class="legend">${lg}</div>`;
-  document.getElementById("dk").innerHTML = `${lmSymbol(28)}<span>lomeone</span>`;
   document.getElementById("sizes").innerHTML = [16, 32, 48, 64].map((s) => `<div class="stack" style="gap:4px;align-items:center">${lmSymbol(s)}<span class="t-caption">${s}px</span></div>`).join("");
   document.getElementById("b1").innerHTML = icon("info") + "<span>카카오톡 안에서는 일정 파일이 열리지 않을 수 있어요.</span>";
   document.getElementById("b2").innerHTML = icon("warn") + "<span>모두 되는 시간은 없어요. 가장 많이 되는 시간이에요</span>";
   document.getElementById("b3").innerHTML = icon("warn") + "<span>연결이 불안정해요. 입력한 내용은 그대로 있어요.</span><button class='btn secondary'>다시 보내기</button>";
+  document.getElementById("feat").innerHTML = [["meet", "약속"], ["ladder", "사다리"], ["team", "팀나누기"], ["wheel", "돌림판"], ["seat", "자리배치"], ["paper", "롤링페이퍼"]].map(([i, n]) => `<div class="stack" style="align-items:center;gap:6px">${featureIcon(i, 56)}<span class="t-caption">${n}</span></div>`).join("");
   document.getElementById("icons").innerHTML = ["back", "close", "share", "copy", "link", "key", "cal", "check", "pencil", "more", "user", "clock", "left", "right", "warn", "info", "trash"].map((n) => `<div class="stack" style="align-items:center;gap:4px;width:64px">${icon(n)}<span class="t-caption">${n}</span></div>`).join("");
   LM.buildGrid(document.getElementById("gi"), { mode: "input", days: 3, from: 9, to: 14 });
   LM.buildGrid(document.getElementById("gh"), { mode: "heatmap", days: 3, from: 17, to: 23 });
