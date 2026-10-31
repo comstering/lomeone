@@ -15,7 +15,9 @@
 
 ## 3. 현재 상태
 - 확정: DEV-1~12 (`DECISIONS.md`).
-- 미결: Q-7 분석 도구 (`ANALYTICS-COMPARISON.md`, DevOps 검증과 연동 — 사용자가 고민 중) (`OPEN-QUESTIONS.md`).
+- 미결: Q-7 분석 도구(사용자가 DevOps 검증 후 선택, 보류), Q-9/10 API 세부, Q-11 ARCHITECTURE 승인 (`OPEN-QUESTIONS.md`).
+- 문서: PR #12 머지됨(main). `ARCHITECTURE.md` 초안은 PR로 검토 대기.
+- 최신 기획/디자인: PRD v1.1, 디자인 v0.2 (기기 토큰 수정만 허용, 총무 응답 삭제, 날짜만·요일 모드, 30분 폴백).
 - 코드: 아직 없음. 기존 라이프커브 코드(`apps/`, `packages/`, `docs/lifecurve/`)는 아직 안 지웠다 (설계 확정 후 별도 PR로 삭제).
 - 기획서 읽음: `LM-PRD-00` §5~10 핵심, `LM-PRD-01`·`design/PROGRESS.md`·`DESIGN-SPEC.md` 목차까지. 디자인 시안 파일 본문은 구현 시점에 읽는다.
 
@@ -25,7 +27,7 @@
 
 ## 4. 다음 할 일
 1. 사용자와 Q-1~8 논의 → `DECISIONS.md` 확정.
-2. `ARCHITECTURE.md` 작성(디렉터리 구조·데이터 흐름·모듈 경계).
+2. ✅ `ARCHITECTURE.md` 초안 작성 → 사용자 승인 대기(Q-11).
 3. `BACKEND-REQUESTS.md` 완성해 사용자에게 전달.
 4. Q-7 결정 후 `ARCHITECTURE.md`에 analytics 어댑터 반영
 5. 초기화 PR: 라이프커브 삭제 + 새 모노레포 골격 + CI.
@@ -34,6 +36,7 @@
 ## 5. 로그 (최신이 위)
 | 날짜 | 내용 |
 | --- | --- |
+| 2026-10-31 | PR #12 머지 확인·main 최신화. Q-7 보류 기록. `ARCHITECTURE.md` 초안 작성(브랜치 `docs/architecture`) |
 | 2026-10-30 | Q-4~6 확정(DEV-10~12). Q-7 분석 도구 비교 분석 작성. main 최신화(a6d6a95), develop 브랜치 rebase → PR |
 | 2026-10-30 | 추천 계산 A 확정(DEV-8), 낙관적 업데이트 패턴 합의(DEV-9). Q-4~7 설명 제공 |
 | 2026-10-28 | API 계약(OpenAPI)·직접 호출(CORS)·MSW 목 확정(DEV-5~7). Q-8 장단점 정리 |
