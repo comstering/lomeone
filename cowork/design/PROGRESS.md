@@ -86,13 +86,14 @@
 - [x] Q. index·DESIGN-SPEC·QUESTIONS(반영 표시, §F 표 갱신)·PROGRESS, 검증, PR
 
 ### 그 뒤 (2차 PR 머지 후)
-1. 새 기획 답변이 오면 `QUESTIONS.md`에서 확인 → 반영 (현재 열린 질문 없음).
+1. 새 기획 답변이 오면 `QUESTIONS.md`에서 확인 → 반영. **열린 질문: §H Q-23~29** (막힘: Q-23 모임 수정 범위 → 답 오면 모임 수정 화면 시안, Q-26 FAQ·방침 수치 → 문구 교체).
 2. 사용성 테스트(D-8, 실제 폰 5명) 결과로 A/B 확정 → 필요 시 B안 제거.
 3. 최종: DAC 체크리스트(`DESIGN-SPEC.md` §9) 갱신, `lomeone-90-design-system-spec.md`(PRD README가 예고한 확정 토큰 문서) 작성 여부 사용자와 합의.
 
 ## 5. 작업 로그 (최신이 위. 작업 끝날 때마다 한 줄 이상 추가)
 | 날짜 | 내용 | 산출물/PR |
 | --- | --- | --- |
+| 2026-11-04 | 기획자 전달용 열린 질문 요약 작성(`QUESTIONS.md` §H, Q-23~29). 막힌 항목: Q-23 모임 수정 범위, Q-26 FAQ·방침 수치 | `feat/design-v2-1` (PR #14에 포함) |
 | 2026-10-31 | **3차 시안**: Q-19~22 반영 — 확정 바꾸는 중([바꾸기 그만두기]·현재 확정 비활성), 응답 마감 입력(토글 + C-05/C-06 단일 변형), 날짜만 확정 시간 칩, 겹침 제외 규칙 검증(코드 변경 없음, 케이스 5개 통과). DESIGN-SPEC·QUESTIONS §G 갱신 | 브랜치 `feat/design-v2-1` |
 | 2026-10-29 | **2차 시안**: 기획 답변(PRD v1.1) 반영 — 색 A·로고 A 확정(B안 `assets/archive/`), 단색·다크 로고, 파비콘, E-01~E-09, Q-02·04·05·06·07·08·09·10·11·16, S-05·06, 스켈레톤, Q-18 | 브랜치 `feat/design-v2` |
 | 2026-10-29 | 검수(web-design-guidelines, impeccable critique/detector, 360/320 실측, 색각 시뮬레이션) 후 시안 수정, DESIGN-SPEC·QUESTIONS 갱신 | 브랜치 `fix/design-review` |
