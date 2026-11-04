@@ -26,7 +26,14 @@
 <script>
   /* ?state=net  → 네트워크 실패 배너 상태 미리보기 */
   const f = document.getElementById("form");
-  createForm(f, { name: "우리 모임" });
+  const Qn = new URLSearchParams(location.search), DL = Qn.get("dl");   // dl=0 펼침(마감 없음) · dl=1 마감 정하기 켬 · dl=2 날짜·시각 선택됨
+  createForm(f, { name: "우리 모임", more: !!DL });
+  if (DL) {   // 상태 미리보기용: 후보 날짜를 미리 골라 둔다
+    f.querySelector('[data-q="we0"]').click(); f.querySelector('[data-q="we1"]').click();
+    if (DL !== "0") f.querySelector("#dl-sw").click();
+    if (DL === "2") { f.querySelector('[data-dk="2026-11-06"]').click(); f.querySelector("#dl-t").value = "22:00"; f.querySelector("#dl-t").dispatchEvent(new Event("change")); }
+    setTimeout(() => f.querySelector("#dl-box").scrollIntoView({ block: "center" }), 50);
+  }
   mountShareSheet();
   f.addEventListener("created", (e) => {
     if (new URLSearchParams(location.search).get("state") === "net") { document.getElementById("neterr").hidden = false; return; }

@@ -72,6 +72,8 @@
   const app = document.getElementById("app"), days = +(Q.get("days") || 3), $ = (s) => document.querySelector(s);
   const IS_ADMIN = ADM.includes(V) || ["confirmed-admin", "confirmed-changed-admin"].includes(V) || (V === "confirmed-date" && !!Q.get("admin"));
   const CHANGE = !!Q.get("change");
+  const CUR = { d: 0, a: 19, b: 21 };                                       // 현재 확정 시간 (수 19:00–21:00)
+  const USE = { "team-project": ["09:00", "팀플"], club: ["10:00", "동아리"], dinner: ["18:00", "회식"], reunion: ["09:00", "동창회"], study: ["09:00", "스터디"], trip: ["09:00", "여행"] }[Q.get("use")];   // Q-21: 용도 랜딩으로 만든 모임만
 
   /* ================= 샘플 데이터 (결과·총무·확정 화면이 모두 같은 응답을 쓴다 — E-02) ================= */
   const P = LM.PEOPLE;                                              // 지원·민수·서연·하준·예린 (5명)
@@ -121,9 +123,10 @@
     const miss = NAMES.filter((n) => !x.set.has(n)), all = x.c === N;
     const who = `${all ? `<span class="all-badge">${icon("check")}전원 가능</span>` : ""}${x.c}/${N}명${!all ? ` · <span class="miss">${miss.slice(0, 2).join("·")}${miss.length > 2 ? ` 외 ${miss.length - 2}명` : ""} 빠짐</span>` : ""}`;
     const when = `${dayName(x.d)} ${hm(x.a)}–${hm(x.b)}`, tag = admin ? "div" : "button";
+    const same = CHANGE && x.d === CUR.d && x.a === CUR.a && x.b === CUR.b;     // Q-19: 지금 확정된 시간은 다시 확정할 수 없다
     const body = `<span class="rank">${x.rank}</span><span><span class="when">${when}</span><span class="who">${who}</span></span>`;
     /* 버튼 안에 버튼을 중첩하지 않는다 → 총무 카드는 div + 별도 확정 버튼 */
-    return `<${tag} class="best ${x.rank === 1 ? "first" : ""}" ${admin ? "" : 'type="button" aria-pressed="false"'} data-r="${x.d},${x.a},${x.b}">${body}${admin ? `<button class="cta btn ${x.rank === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}" data-c="${x.c}">${CHANGE ? "이 시간으로 바꾸기" : "이 시간으로 확정"}</button>` : ""}</${tag}>`;
+    return `<${tag} class="best ${x.rank === 1 ? "first" : ""}" ${admin ? "" : 'type="button" aria-pressed="false"'} data-r="${x.d},${x.a},${x.b}">${body}${admin ? (same ? `<button class="cta btn secondary block" aria-disabled="true" aria-describedby="same-cap">이 시간으로 바꾸기</button><span class="t-caption" id="same-cap" style="grid-column:1/-1;text-align:center">지금 확정된 시간이에요</span>` : `<button class="cta btn ${x.rank === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}" data-c="${x.c}">${CHANGE ? "이 시간으로 바꾸기" : "이 시간으로 확정"}</button>`) : ""}</${tag}>`;
   };
   const bestSection = () => `<section><div class="sec-title"><h2 class="t-h2">가장 좋은 시간</h2></div><div id="best-banner"></div><div class="stack" id="best-list" style="gap:var(--s-2)"></div>${N > 1 ? `<div class="chips" role="group" aria-label="최소 길이" style="margin-top:var(--s-3)"><button class="chip" aria-pressed="false" data-f="1">30분 이상</button><button class="chip" aria-pressed="true" data-f="2">1시간 이상</button><button class="chip" aria-pressed="false" data-f="4">2시간 이상</button></div><p class="t-caption" id="best-cap" style="margin-top:8px" hidden>1시간 이상 겹치는 시간이 없어 30분 단위로 보여줘요</p>` : ""}</section>`;
   function drawBest(admin, minL) {
@@ -196,7 +199,7 @@
     /* SCR-08 총무 */
     admin: () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div><p class="t-caption" style="margin-bottom:8px">칸을 길게 눌러 직접 시간을 골라 확정할 수도 있어요</p>${legend(N)}<div style="margin-top:12px">${heat("g")}</div></div>
       <aside class="stack-lg"><div><h1 class="t-h1">${N}명 응답했어요</h1>
-        ${CHANGE ? `<div class="banner info" style="margin-top:12px">${icon("info")}<span>확정 시간을 바꾸는 중이에요. 현재: 수 10/29 19:00–21:00</span></div>` : `<div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div>`}</div>
+        ${CHANGE ? `<div class="banner info" style="margin-top:12px;flex-wrap:wrap">${icon("info")}<span style="flex:1;min-width:0">확정 시간을 바꾸는 중이에요. 현재: 수 10/29 19:00–21:00<br><span class="t-caption" style="color:inherit;opacity:.85">참여자에게는 새로 확정하기 전까지 지금 확정이 그대로 보여요</span></span><a class="btn secondary" href="m.html?v=confirmed-admin" style="margin-left:0;flex-basis:100%">바꾸기 그만두기</a></div>` : `<div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div>`}</div>
         ${bestSection()}${chipsHtml(true)}</aside></div>${bar(`<a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a>`)}`,
 
     "admin-date": () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${dateBars}</div>
@@ -231,7 +234,8 @@
   views["confirmed-changed"] = () => views.confirmed({ changed: 1 });
   views["confirmed-changed-admin"] = () => views.confirmed({ changed: 1, admin: 1 });
   views["confirmed-admin"] = () => views.confirmed({ admin: 1 });
-  views["confirmed-date"] = () => views.confirmed({ date: "11월 8일 토요일", time: "하루 종일", count: "5명 중 5명 가능", dateOnly: 1, admin: IS_ADMIN });
+  const T12 = (t) => { const [h, m] = t.split(":").map(Number); return `${h < 12 ? "오전" : "오후"} ${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")}`; };
+  views["confirmed-date"] = () => views.confirmed({ date: "11월 8일 토요일", time: Q.get("t") ? T12(Q.get("t")) : "하루 종일", count: "5명 중 5명 가능", dateOnly: 1, admin: IS_ADMIN });
   views["confirmed-dow"] = () => views.confirmed({ date: "매주 수요일", time: "오후 7:00 – 9:00", count: "5명 중 5명 가능" });
   views.past = () => views.confirmed({ past: 1 });
 
@@ -254,10 +258,20 @@
     ? `<a class="menu-item" href="m.html?v=admin&change=1">${icon("clock")} 확정 시간 바꾸기</a><button data-open="#sh-uncf">${icon("back")} 확정 취소</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`
     : RES.includes(V) ? `<button data-copy="링크를 복사했어요">${icon("link")} 링크 복사</button>`
     : `<button data-toast="모임 수정 화면으로 이동해요">${icon("pencil")} 모임 수정 (이름·날짜 추가)</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`;
+  function chipTimes() {   // Q-21 빠른 칩: 점심 12:00 · 저녁 18:00 · 저녁 19:00, 용도 랜딩 모임은 해당 시작 시간을 맨 앞에
+    const base = [["점심 12:00", "12:00"], ["저녁 18:00", "18:00"], ["저녁 19:00", "19:00"]];
+    if (!USE) return base;
+    const i = base.findIndex((b) => b[1] === USE[0]);
+    return i >= 0 ? [base[i], ...base.filter((_, k) => k !== i)] : [[`${USE[1]} 시작 ${USE[0]}`, USE[0]], ...base];
+  }
   const okHref = V === "admin-date" ? "m.html?v=confirmed-date&admin=1" : CHANGE ? "m.html?v=confirmed-changed-admin" : "m.html?v=confirmed-admin";
   document.body.insertAdjacentHTML("beforeend", `
   <div class="sheet" id="sh-confirm" role="dialog" aria-modal="true" aria-labelledby="c-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="c-t">수 10/29 19:00–21:00로 확정할까요?</h2><p class="muted" id="c-s"></p>
-    ${V === "admin-date" ? `<div class="field"><label for="ct">시간 <span class="opt">(선택)</span></label><select class="select" id="ct"><option>하루 종일</option>${times.map((t) => `<option>${t}</option>`).join("")}</select><span class="hint">시간은 나중에 바꿀 수 있어요</span></div>` : ""}
+    ${V === "admin-date" ? `<div class="field" id="tm"><span class="lbl">시간 <span class="opt">(선택)</span></span>
+      <div class="row" style="justify-content:space-between"><b id="tm-v" aria-live="polite">하루 종일</b><button type="button" class="btn ghost" id="tm-open" style="min-height:36px" aria-expanded="false" aria-controls="tm-box">시간 정하기</button></div>
+      <div id="tm-box" hidden class="stack" style="gap:var(--s-2)"><div class="chips wrap-chips" role="group" aria-label="빠른 시간">${chipTimes().map(([l, t]) => `<button type="button" class="chip" aria-pressed="false" data-t="${t}" data-l="${l}">${l}</button>`).join("")}</div>
+        <div class="row"><label for="ct" class="sr-only">직접 선택</label><select class="select" id="ct" style="flex:1"><option value="">직접 선택</option>${times.map((t) => `<option>${t}</option>`).join("")}</select><button type="button" class="btn ghost" id="tm-reset" style="min-height:36px">하루 종일로</button></div></div>
+      <span class="hint">시간은 나중에 바꿀 수 있어요</span></div>` : ""}
     <div class="modal-btns"><a class="btn primary lg" href="${okHref}">${CHANGE ? "시간 바꾸기" : "확정하기"}</a><button class="btn ghost" data-close>취소</button></div></div></div>
   <div class="sheet" id="sh-menu" role="dialog" aria-modal="true" aria-label="메뉴"><div class="handle"></div><div class="menu">${menu}<button data-close>닫기</button></div></div>
   <div class="sheet" id="sh-del" role="alertdialog" aria-modal="true" aria-labelledby="d-t"><div class="handle"></div><div class="stack"><h2 class="t-h2" id="d-t">모임을 삭제할까요?</h2><p class="muted">삭제하면 응답이 모두 지워지고 되돌릴 수 없어요.</p><div class="modal-btns"><button class="btn danger lg" data-toast="삭제했어요">삭제하기</button><button class="btn ghost" data-close>취소</button></div></div></div>
@@ -274,6 +288,16 @@
     const b = e.target.closest("[data-when]"); if (b) { $("#c-t").textContent = b.dataset.when + (CHANGE ? "로 바꿀까요?" : "로 확정할까요?"); $("#c-s").textContent = `${b.dataset.date ? 5 : N}명 중 ${b.dataset.c}명 가능`; }
     const w = e.target.closest("[data-who]"); if (w) { $("#dr-t").textContent = `${w.dataset.who}의 응답을 지울까요?`; $("#dr-go").dataset.who = w.dataset.who; }
   }, true);
+  if (V === "admin-date") {   // 시간 선택 (선택 입력, 기본 하루 종일)
+    const okBtn = $("#sh-confirm .modal-btns .btn.primary"), val = $("#tm-v"); let tsel = "";
+    const setT = (t, label) => { tsel = t; val.textContent = t ? label || t : "하루 종일"; $("#ct").value = t && [...$("#ct").options].some((o) => o.value === t || o.text === t) ? t : ""; document.querySelectorAll("#tm .chip").forEach((c) => c.setAttribute("aria-pressed", c.dataset.t === t));
+      okBtn.href = "m.html?v=confirmed-date&admin=1" + (t ? "&t=" + t : ""); };
+    $("#tm-open").addEventListener("click", (e) => { const b = $("#tm-box"); b.hidden = !b.hidden; e.currentTarget.setAttribute("aria-expanded", !b.hidden); });
+    $("#tm-box").addEventListener("click", (e) => { const c = e.target.closest(".chip"); if (c) setT(c.dataset.t, c.dataset.l); });
+    $("#ct").addEventListener("change", (e) => setT(e.target.value));
+    $("#tm-reset").addEventListener("click", () => setT(""));
+    if (Q.get("tm")) { $("#tm-box").hidden = false; $("#tm-open").setAttribute("aria-expanded", "true"); }
+  }
   $("#dr-go").addEventListener("click", (e) => { closeSheets(true); toast(`${e.currentTarget.dataset.who}의 응답을 지웠어요`); });
 
   if (V === "name") {

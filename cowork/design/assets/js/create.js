@@ -29,15 +29,22 @@
         <div class="time-range"><select class="select" id="tf" aria-label="시작 시간">${opts(o.from)}</select><span>~</span><select class="select" id="tt" aria-label="종료 시간">${opts(o.to)}</select></div>
         <span class="field"><span class="err" id="terr" hidden>끝나는 시간은 시작 시간보다 늦어야 해요</span><span class="hint">끝나는 시간은 24:00까지 고를 수 있어요</span></span>
       </div>
-      <details class="more"><summary>더 설정하기</summary>
-        <div class="field" style="margin-top:var(--s-3)"><label for="dl">응답 마감 <span class="opt">(선택)</span></label><input class="input" id="dl" name="deadline" type="datetime-local"><span class="hint">마감 뒤에는 응답을 받지 않고 결과만 볼 수 있어요</span></div></details>
+      <details class="more"${o.more ? " open" : ""}><summary>더 설정하기</summary>
+        <div class="stack" style="margin-top:var(--s-3)" id="dl-box">
+          <div class="row" style="justify-content:space-between;gap:var(--s-3)"><div><div class="t-label" id="dl-l">응답 마감 정하기</div><span class="hint" style="font-size:13px;color:var(--text-subtle)">마감 뒤에는 응답을 받지 않고 결과만 볼 수 있어요</span></div>
+            <button type="button" class="switch" role="switch" aria-checked="false" aria-labelledby="dl-l" id="dl-sw"><i></i></button></div>
+          <div id="dl-body" hidden class="stack">
+            <div id="dl-cal"></div>
+            <div class="time-range" style="grid-template-columns:1fr"><select class="select" id="dl-t" aria-label="마감 시각"></select></div>
+            <div class="cal-sum" id="dl-sum" aria-live="polite"></div>
+          </div></div></details>
       <div class="banner error" id="neterr" hidden>${icon("warn")}<span>연결이 불안정해요. 입력한 내용은 그대로 있어요.</span><button type="button" class="btn secondary" data-retry>다시 보내기</button></div>
       <div class="submit-bar"><div class="inner"><span class="trust" id="why" role="status">날짜를 하나 이상 골라 주세요</span><button class="btn primary lg block" type="submit" id="go" aria-disabled="true">링크 만들기</button></div></div>
     </form>`;
 
     const $ = (s) => root.querySelector(s), picked = new Set(); let by = o.by, start = 0;
     const key = (d) => d.toISOString().slice(0, 10);
-    const sum = () => {
+    let sum = () => {
       const n = picked.size;
       $("#sum").textContent = !n ? "" : by === "dow" ? "매주 " + [...picked].sort((a, b) => a - b).map((i) => DOW[(i + 1) % 7]).join("·") : `${n}일 선택됨`;
       $("#go").setAttribute("aria-disabled", !n); $("#why").hidden = n > 0;
@@ -94,6 +101,47 @@
       setTimeout(() => { b.classList.remove("loading"); b.textContent = "링크 만들기"; root.dispatchEvent(new CustomEvent("created", { detail: { name: $("#mn").value || "우리 모임", n: picked.size } })); }, 700);
     });
     renderCal();
+
+    /* ===== 응답 마감 (Q-20): C-05 단일 선택 변형 + C-06 단일 시각 변형. 기본 = 마감 없음 (토글) =====
+       범위: 지금 + 1시간 ~ 마지막 후보 날짜 23:30 (요일 모드는 오늘부터 4주). 시안의 "지금"은 2026-10-28 14:00 고정 */
+    const NOW = new Date(2026, 9, 28, 14, 0), MIN = new Date(NOW.getTime() + 3600e3);
+    let dlDate = null, dlStart = 0;
+    const dlMax = () => by === "dow" ? new Date(TODAY.getTime() + 27 * 864e5) : picked.size ? new Date([...picked].sort().pop() + "T00:00:00") : null;
+    const dlKey = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const fmt12 = (t) => { const [h, m] = t.split(":").map(Number); return `${h < 12 ? "오전" : "오후"} ${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")}`; };
+    function dlTimes() {
+      const sel = $("#dl-t"), prev = sel.value || "22:00"; let h = "";
+      for (let m = 0; m < 24 * 60; m += 30) { const t = `${String(Math.floor(m / 60)).padStart(2, "0")}:${m % 60 ? "30" : "00"}`; const dt = dlDate ? new Date(dlDate.getFullYear(), dlDate.getMonth(), dlDate.getDate(), Math.floor(m / 60), m % 60) : null;
+        h += `<option value="${t}" ${dt && dt < MIN ? "disabled" : ""} ${t === prev ? "selected" : ""}>${fmt12(t)}</option>`; }
+      sel.innerHTML = h; if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) sel.value = [...sel.options].find((x) => !x.disabled).value;
+    }
+    function dlSummary() {
+      const el = $("#dl-sum"); if (!dlDate) { el.textContent = ""; return; }
+      el.textContent = `${dlDate.getMonth() + 1}월 ${dlDate.getDate()}일 (${DOW[dlDate.getDay()]}) ${fmt12($("#dl-t").value)}에 마감`; }
+    function dlRender() {
+      const max = dlMax(), box = $("#dl-cal");
+      if (!max) { box.innerHTML = `<div class="banner info">${icon("info")}<span>날짜를 먼저 골라 주세요. 마감은 마지막 후보 날짜까지 정할 수 있어요</span></div>`; $("#dl-t").disabled = true; dlSummary(); return; }
+      $("#dl-t").disabled = false;
+      if (dlDate && dlDate > max) dlDate = null;
+      const first = new Date(TODAY); first.setDate(first.getDate() + dlStart * 14); const lead = (first.getDay() + 6) % 7; let cells = "";
+      for (let i = 0; i < lead; i++) cells += `<span class="day pad"></span>`;
+      for (let i = 0; i < 14; i++) { const d = new Date(first); d.setDate(first.getDate() + i); const out = d < new Date(MIN.getFullYear(), MIN.getMonth(), MIN.getDate()) || d > max;   // 범위 밖은 비활성
+        cells += `<button type="button" class="day${dlKey(d) === dlKey(TODAY) ? " today" : ""}" data-dk="${dlKey(d)}" aria-pressed="${!!dlDate && dlKey(d) === dlKey(dlDate)}" ${out ? 'aria-disabled="true"' : ""} aria-label="${d.getMonth() + 1}월 ${d.getDate()}일 ${DOW[d.getDay()]}요일">${d.getDate()}</button>`; }
+      const last = new Date(first); last.setDate(first.getDate() + 13);
+      box.innerHTML = `<div class="cal"><div class="cal-head"><button type="button" class="icon-btn" data-dnav="-1" aria-label="이전 2주" ${dlStart === 0 ? "disabled" : ""}>${icon("left")}</button><strong>${first.getMonth() + 1}월 ${first.getDate()}일 ~ ${last.getMonth() + 1}월 ${last.getDate()}일</strong><button type="button" class="icon-btn" data-dnav="1" aria-label="다음 2주" ${last >= max ? "disabled" : ""}>${icon("right")}</button></div>
+        <div class="cal-dow">${["월", "화", "수", "목", "금", "토", "일"].map((w) => `<span>${w}</span>`).join("")}</div><div class="cal-days">${cells}</div></div>`;
+      dlTimes(); dlSummary();
+    }
+    root.addEventListener("click", (e) => {
+      const sw = e.target.closest("#dl-sw"); if (sw) { const on = sw.getAttribute("aria-checked") !== "true"; sw.setAttribute("aria-checked", on); $("#dl-body").hidden = !on; if (on) dlRender(); else { dlDate = null; } return; }
+      const k = e.target.closest("[data-dk]"); if (k && k.getAttribute("aria-disabled") !== "true") { dlDate = new Date(k.dataset.dk + "T00:00:00"); dlRender(); return; }
+      const n = e.target.closest("[data-dnav]"); if (n) { dlStart = Math.max(0, dlStart + +n.dataset.dnav); dlRender(); }
+    });
+    $("#dl-t").addEventListener("change", dlSummary);
+    // 후보 날짜가 바뀌면 범위도 다시 계산
+    const _sum = sum; sum = () => { _sum(); if ($("#dl-sw").getAttribute("aria-checked") === "true") dlRender(); };
+    if (o.dlOpen) { $("#dl-sw").click(); }
+    if (o.dlPick) { dlDate = new Date(o.dlPick + "T00:00:00"); dlRender(); }
   };
 })();
 

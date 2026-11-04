@@ -1,6 +1,6 @@
 # 개발 핸드오프 — 로미원 1단계 웹디자인 시안
 
-> 기준: `LM-PRD-01` **v1.1** (기획서는 `../prd/`) · 시안 버전 **v0.2 (2차, 2026-10-29)** — 기획 답변·창업자 결정 반영
+> 기준: `LM-PRD-01` **v1.2** (기획서는 `../prd/`) · 시안 버전 **v0.3 (3차, 2026-10-31)** — PRD v1.2 (Q-19~22 답변) 반영
 > 이 문서는 **개발자가 시안을 보고 무엇을 어떻게 옮기면 되는지**를 적어요. 값이 PRD와 다르면 PRD가 우선이고, 다른 곳은 아래 §8에 모아 두었어요.
 > 확정 전 항목은 `QUESTIONS.md`를 보세요.
 
@@ -27,13 +27,13 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | --- | --- | --- |
 | SCR-01 홈 | `screens/home.html` | |
 | SCR-02 약속 랜딩 + 용도 6종 | `screens/meet.html` | `for=team-project \| club \| dinner \| reunion \| study \| trip` |
-| SCR-03 모임 만들기 | `screens/new.html` | `state=net` (제출 시 네트워크 실패 배너) |
+| SCR-03 모임 만들기 | `screens/new.html` | `state=net` (제출 시 네트워크 실패 배너) · `dl=0 \| 1 \| 2` (응답 마감: 펼침·꺼짐 / 켬 / 날짜·시각 선택됨) |
 | SCR-04 공유 시트 | `screens/new.html` (생성 직후 시트) | `sheet=1` |
 | SCR-05 이름 입력 | `screens/m.html` | `v=name` (이름에 `민수` 입력 → 중복 오류) |
 | SCR-06 칠하기 | `screens/m.html` | `v=paint` · `alt=b`(D-8 B안) · `filled=0`(빈 그리드) · `days=8`(가로 넘김) · `coach=0` · `v=paint-dow`(요일 모드) · `v=paint-closed`(응답 마감) |
 | SCR-06b 날짜만 | `screens/m.html` | `v=dateonly` |
 | SCR-07 결과 | `screens/m.html` | `v=result` · `result-one` · `result-none`(전원 없음+동률, 순위 1·1·3) · `result-short`(30분 자동 폴백) · `result-date`(날짜만) · `result-dow`(요일 모드) · `result-many`(24명) · `sheet=list \| key` |
-| SCR-08 총무 | `screens/m.html` | `v=admin` · `admin-empty` · `admin-date` · `admin-many` · `change=1`(확정 시간 바꾸기) · `sheet=confirm \| menu \| delete \| list \| delr` |
+| SCR-08 총무 | `screens/m.html` | `v=admin` · `admin-empty` · `admin-date` · `admin-many` · `change=1`(확정 시간 바꾸기, [바꾸기 그만두기]) · `tm=1`(날짜만 확정 시간 칩 펼침) · `sheet=confirm \| menu \| delete \| list \| delr` |
 | SCR-09 확정 | `screens/m.html` | `v=confirmed` · `confirmed-part` · `confirmed-changed` · `confirmed-changed-admin` · `confirmed-admin` · `confirmed-date`(하루 종일) · `confirmed-dow`(매주) · `past` · `sheet=cal \| menu \| uncf` · `toast=uncf` |
 | 로딩 | `screens/m.html`, `my.html` | `m.html?v=loading` · `my.html?loading=1` |
 | SCR-10 내 모임 | `screens/my.html` | `empty=1` |
@@ -76,8 +76,9 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | C-02 | SiteFooter | `.site-footer` | |
 | C-03 | Button | `.btn.primary \| secondary \| ghost \| danger \| kakao` + `.lg`(52px) `.block` `.loading` | 기본 44px |
 | C-04 | TextField | `.field` + `.input` (+ `.hint` `.err` `.counter`) | 입력 16px 고정 |
-| C-05 | DatePickerMulti | `.cal` / `.dow-toggles` / `.day` | 탭 + 드래그 다중 선택, 31일 제한 |
-| C-06 | TimeRangeSelect | `.time-range` + `.select` | 시안은 `<select>`. 모바일 네이티브 피커 권장 |
+| C-05 | DatePickerMulti | `.cal` / `.dow-toggles` / `.day` | 탭 + 드래그 다중 선택, 31일 제한. **단일 선택 변형**: 응답 마감 날짜(`data-dk`, 드래그 없음, 범위 밖 `aria-disabled`) |
+| (스위치) | Switch | `.switch` (`role="switch"`, `aria-checked`) | 응답 마감 정하기. 52×32, 켜면 `--accent` |
+| C-06 | TimeRangeSelect | `.time-range` + `.select` | 시안은 `<select>`. 모바일 네이티브 피커 권장. **단일 시각 변형**: 응답 마감 시각(기본 오후 10:00), 날짜만 확정 시간(`#ct`) |
 | C-07 | ModeSegmented | `.seg` (`role="radiogroup"`) | |
 | C-08 | SlotGrid | `.slot` `data-mode="input \| heatmap \| highlight"` → §4 | 핵심 |
 | C-09 | GridLegend | `.legend` | |
@@ -120,6 +121,8 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 - **스크린리더:** 셀 `aria-label="10월 29일 수요일 오후 7시"` + `aria-selected`. 히트맵 셀은 탭 시 말풍선에 "수 19:30 · 4/5명 · 민수 빠짐"(시안은 시각만; 라이브 리전 연결은 개발).
 - **스크롤 방식(Q-18 확정, PRD v1.1):** 그리드는 **자체 세로 스크롤 컨테이너**(`max-height: min(680px, 100dvh − 250px)`) + 날짜 헤더 고정. 카톡 인앱 높이(약 580px)에서 8행 이상 보이고(실측 9행), 그리드 끝에 닿으면 페이지 스크롤로 이어지도록 **`overscroll-behavior: contain`은 쓰지 않아요**. 결과 화면은 처음에 정답 구간(19시 근처)이 보이게 `scrollTo`로 시작해요.
 - **추천 시간 계산(시안 `m.html` `candidates()` — 개발 알고리즘 참고):** 같은 사람 집합이 유지되는 최대 연속 구간을 후보로 → 정렬 인원 ↓ → 연속 길이 ↓ → 이른 날짜 → 같은 날 겹치는 후보 제외 → 최대 3개 → 공동 순위(1·1·3). 최소 길이 필터 [30분|1시간|2시간], 1시간 이상 구간에 2명 이상 겹침이 없으면 30분으로 자동 폴백 + 캡션. 날짜만 모드는 점수 = 돼요 1 + 애매 0.5(동률 → 돼요 수 → 이른 날짜).
+- **겹침 제외(PRD v1.2 R-04-2, 시안 검증 완료):** 최소 길이 필터 → 정렬(인원 → 연속 길이 → 이른 시작) → 같은 날 **30분 칸을 하나라도 공유하면 겹침**(순위 높은 쪽만 남김, 맞닿은 구간은 겹침 아님) → 3개까지 채움 → 남은 카드 기준 공동 순위. 시안 `candidates()`가 이 순서이며 케이스 5개로 확인했어요 (`QUESTIONS.md` §G).
+- **확정 바꾸는 중(Q-19):** 총무만 보는 임시 화면 상태. 서버 확정값은 새로 확정하기 전까지 변하지 않고(참여자 화면·OG 포함), 화면을 떠나도 이전 확정 유지, 응답은 계속 받으며 추천은 최신 응답으로 계산. 현재 확정과 같은 시간은 선택 불가("지금 확정된 시간이에요").
 - **요일 모드:** `buildGrid({dow:true})` 헤더는 요일만("수"), 결과 "매주 수 19:00–21:00", 확정 "매주 수요일" + 캘린더는 매주 반복 일정.
 - **히트맵:** 칸당 응답 수 `c`/전체 `N` → `ceil(c/N·5)`로 `--heat-1~5`, `c = N`이면 `.hAc`(전원). 같은 칸에서 색 + 2px 테두리 + 줄무늬로 표시.
 - **큰 범위:** 6일 이상이면 가로 넘김 (`.slot-scroll` 가로 스크롤 + "1–5 / 8일" 안내. 시안의 안내 숫자는 고정 문구라서 스크롤 위치에 따라 바뀌게 구현 필요).
@@ -167,6 +170,7 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 9. **샘플 응답 하나를 모든 화면이 공유 (E-02)** — 금 추천이 PRD 예시(19:00–20:00)와 달리 19:00–21:00으로 나와요. 같은 데이터로 계산한 값이라 일관성을 우선했어요.
 10. **총무 카드는 버튼 중첩 금지** — 총무 모드 BestTimeCard는 `div` + 별도 "이 시간으로 확정" 버튼 (참여자 모드는 `button`: 탭 → 히트맵 하이라이트).
 11. **"이 이름으로 수정하기" 링크 삭제 (Q-02)** — 다른 기기에서 같은 이름은 막고(덮어쓰기 불가), 같은 기기는 기기 토큰으로 "내 응답 수정". 총무가 응답 삭제 (응답 관리 시트 → 확인 시트).
+13. **응답 마감 시각 기준(Q-20)** — 시안의 "지금"은 2026-10-28 14:00 고정이라 오늘 오후 3시 이전 시각이 비활성이에요. 실제는 서버 시각 + 1시간. 요일 모드 상한은 오늘부터 4주.
 12. **공유 시트(E-08·Q-09)** — 썸네일을 가로 배치로 줄여 360×640 첫 화면에 [카카오톡으로 보내기]와 [카톡 '나와의 채팅'에 저장]이 보여요. 나와의 채팅 저장은 로그인 필요한 "나에게 보내기" API가 아니라 일반 카카오 공유로 총무 링크를 보내고 받는 곳을 '나와의 채팅'으로 고르게 하는 방식 (개발은 D-4 확인).
 
 ## 9. QA 체크 (PRD §13) — 현재 상태
