@@ -10,5 +10,8 @@
 | Q-4 | 동적 OG 이미지(카톡 미리보기) 데이터 출처: Next가 백엔드를 서버 호출해 `next/og`로 생성 | → DEV-10 |
 | Q-5 | 스타일·컴포넌트: Tailwind 4 + 직접 구현(시안 토큰 이식) vs 헤드리스 라이브러리 | → DEV-11 |
 | Q-6 | 테스트 전략: Vitest(추천 알고리즘) + Playwright(카톡 인앱 뷰포트 E2E) 범위 | → DEV-12 |
-| Q-7 | 분석·이벤트 로그(F-19) 도구 | 비교 분석 작성함(`ANALYTICS-COMPARISON.md`). DevOps의 Observability/이벤트 수집 도구 검증 결과와 맞춰 보류 |
+| Q-7 | 분석·이벤트 로그(F-19) 도구 | 비교 분석 작성함(`ANALYTICS-COMPARISON.md`). **사용자가 DevOps 검증 후 나중에 선택**(2026-10-31). 프론트는 어댑터 구조로 대비 |
 | Q-8 | 추천 계산 위치 | → DEV-8 |
+| Q-9 | 슬롯 전송 포맷(비트맵 vs 인덱스 배열), 응답자 토큰 발급 주체(클라이언트 생성 권장) | OpenAPI 초안에서 확정 |
+| Q-10 | 에러 포맷 표준(problem+json 여부), 엔드포인트 목록 | OpenAPI 초안에서 확정 |
+| Q-11 | ARCHITECTURE.md 초안 승인 | 사용자 검토 대기 |
