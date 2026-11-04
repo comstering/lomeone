@@ -3,11 +3,64 @@
 > **새 세션은 이 파일부터 읽는다.** 그다음 `QUESTIONS.md`(답변 반영 여부), `DESIGN-SPEC.md`(핸드오프).
 > **작업 규칙:** 작업 단위가 끝날 때마다 아래 §5 로그와 §3 현황·§4 다음 할 일을 **그 자리에서** 갱신한다. 세션은 언제 끊길지 모른다.
 
+## 0. ⭐ 세션 인수인계 스냅샷 (2026-11-04 마지막 갱신) — 새 세션은 여기부터
+
+**한 줄 요약:** 로미원 1단계 시안 v0.3(3차)까지 완료. 기획 답변 Q-01~22 모두 반영. 지금은 **기획자의 새 답변(§H Q-23~29)을 기다리는 중**이고, 막힌 건 Q-23(모임 수정 범위)·Q-26(FAQ·방침 수치) 두 가지.
+
+### 저장소·PR 상태 (작성 시점)
+| 항목 | 상태 |
+| --- | --- |
+| 현재 브랜치 | `feat/design-v2-1` (작업 트리 clean, 전부 push됨, HEAD `fcc1774`) |
+| **PR #14** (우리 것, 열림) | `feat/design-v2-1` → `main`. 3차 시안(Q-19~22) + 기획 답변 + §H 열린 질문 요약 포함. 머지·pull은 사용자가 한다 |
+| PR #13 (남의 것, 열림) | `docs/architecture` — 개발 쪽 프론트엔드 아키텍처 초안. **우리 작업과 무관, 건드리지 않는다** |
+| 머지 이력 | #7 PRD · #8 시안 v0.1 · #9 진행기록 · #10 검수 수정 · #11 시안 v0.2(2차) · #12 개발 컨텍스트(남의 것) |
+| 다른 사람 작업 | `docs/develop-context`, `docs/architecture` 등 개발 컨텍스트 문서는 개발 쪽이 올린다. 우리는 `cowork/prd`(기획자) · `cowork/design`(우리)만 |
+
+### 새 세션 첫 행동 (순서대로)
+1. `git fetch && git status && git branch --show-current` 로 상태 확인.
+   - **PR #14가 머지됐으면** `git switch main && git pull` 후 새 작업은 `git switch -c <새 브랜치> origin/main`.
+   - 아직 열려 있으면 `feat/design-v2-1`에서 이어 작업(같은 PR에 쌓임) 또는 새 브랜치.
+2. **`git status`에 `cowork/prd/*` 또는 `cowork/design/QUESTIONS.md` 수정이 보이면 기획자가 작업 트리에서 직접 고친 것**이다 (지금까지 항상 이 방식으로 답변이 왔다). `git diff`로 읽고 → 반영 → 기획자 수정은 **별도 커밋**(`docs: Apply planner answers …`)으로 먼저 올린 뒤 시안 커밋. 절대 되돌리지 않는다.
+3. `QUESTIONS.md` §H 표의 `답변` 칸이 채워졌는지 확인.
+4. 이 파일 §4 "다음 할 일"과 아래 "답이 오면 할 일"을 따른다.
+
+### 열린 질문 (`QUESTIONS.md` §H) — 기획자에게 전달 완료, 답 대기
+| ID | 막힘? | 요약 | 답이 오면 할 일 |
+| --- | --- | --- | --- |
+| **Q-23** | 🔴 막힘 | 총무 ⋯ "모임 수정" 범위 (제안: 이름 · 날짜 추가(응답 있는 날짜 삭제 불가) · 시간 범위 넓히기만 · 마감 변경/해제, 모드 변경 불가) | **모임 수정 화면 시안** 신규 (`screens/`에 추가 또는 `m.html` 시트/페이지), 갤러리·SPEC·PRD 대조 |
+| **Q-26** | 🔴 막힘 | FAQ 4개·소개 문구는 내 초안. "인원 제한 없음"은 PRD 근거 없음, "90일 뒤 삭제"는 PRD가 "마지막 날짜 후보 또는 확정일 + 90일"(D-3 법률 전) | `meet.html` FAQ, `about.html` 문구 교체. 인원 상한이 생기면 입력 한도 UI도 |
+| Q-24 | 🟡 | PRD §8에 새 컴포넌트 ID 부여 (Switch · ResponderListSheet · DateBarList · Skeleton · FeatureIcon, 제안 C-33~37) | `DESIGN-SPEC.md` §3 표의 이름·ID를 PRD와 맞춤 |
+| Q-25 | 🟡 | 시안에서 새로 쓴 문구 최종 확인(DAC-08) | 고칠 문구를 `create.js`·`m.html`·`new.html` 등에서 교체 (목록은 Q-25 행) |
+| Q-27 | 🟡 | 사용성 테스트(D-8, DAC-02~04) 일정·참가자·시안 URL(Vercel preview 등)·진행자 | 필요하면 **테스트 시나리오·질문지** 작성(디자이너 준비 가능) |
+| Q-28 | 🟢 | PRD SCR-07 샘플(금 19:00–20:00)과 시안(19:00–21:00) 중 어디에 맞출지 | 시안에 맞추면 PRD만 수정(기획), PRD에 맞추면 `grid.js` `PEOPLE` 수정 |
+| Q-29 | 🟢 | 법적 문서 본문(D-3) · 카카오 앱/공식 심볼(D-4) · 개발 PRD `LM-PRD-02` 시점 | 도착 시 `about.html` 본문 · 카카오 심볼 교체 |
+
+### 시안 완성도 한눈에 (v0.3)
+- **완료:** SCR-01~12(+06b), OG·카카오 템플릿 SCR-13·14, 컴포넌트 C-01~32(C-26 제외) + 단일 선택 변형·Switch·스켈레톤·기능 아이콘 6종. 브랜드 확정(민트 틸 `#0B7F70` + 겹친 두 원 + Pretendard, 확정 카드 꽉 채움, "곧 나와요" 홈 하단 유지). 다크 모드, 코발트·로고 B는 `assets/archive/` 보관.
+- **미작성:** 모임 수정 화면(Q-23).
+- **못 한 검증(사람·기기 필요):** 사용성 테스트(D-8, 실제 폰 5명 — 판정: 5명 중 2명 이상 "스크롤하려다 칠함"이면 B안), 카톡 인앱 실기기(`.ics` 메뉴 이름 포함), VoiceOver/TalkBack, 카톡 썸네일 안 로고 실물. 이건 `QUESTIONS.md` §D에 정직하게 적혀 있다 — "완료"로 바꾸지 않는다.
+- **검증된 것:** 헤드리스 Chrome 실측(360×640·360×580(인앱)·320×568: 주 버튼 첫 화면, 가로 넘침 없음, 그리드 8행 이상), 전 화면 JS 오류 없음, impeccable detector low-contrast 0건(잔여 15건은 의도한 줄무늬·오탐), 색각 이상 계산 시뮬레이션(히트맵 ΔE ≥ 5), 추천 알고리즘 케이스 5개.
+
+### 기획·창업자가 이미 확정한 것 (다시 묻지 않는다)
+- D-5 브랜드(민트 틸 + 겹친 두 원 + Pretendard) · D-11 "곧 나와요" 유지 · Q-15 확정 카드 꽉 채움 · **스택: 프론트 Next.js + Vercel, 백엔드는 별도 서버**(언어·DB는 `LM-PRD-02`).
+- 이 저장소가 로미원 서비스 저장소, 라이프커브 코드(`apps/`, `packages/`)는 정리될 예정이라 무시.
+- Q-18 그리드는 **안쪽 스크롤 + scroll chaining**(`overscroll-behavior: contain` 쓰지 않음), 인앱 580px에서 8행 이상.
+- Q-02 이 기기에서만 수정(덮어쓰기 불가), 총무가 응답 삭제. Q-19 확정 "바꾸는 중"은 총무만 보는 임시 상태(참여자·OG는 이전 확정 유지).
+- 추천 규칙(PRD v1.2 R-04-2): 최소 길이 → 인원·길이·이른 시작 정렬 → 같은 날 30분 칸 공유 시 순위 높은 쪽만 → 3개까지 → 남은 카드 기준 공동 순위. 시안 `m.html` `candidates()`가 이 구현이다 (개발 참고용).
+
+### 작업 방식 메모 (사용자 선호·지시)
+- 응답·문서는 **한국어**, 간결하게. 안 한 것·못 한 검증은 숨기지 않고 말한다.
+- **`main` 직접 작업 금지**, `origin/main`에서 브랜치 → push → `gh pr create --base main`. **머지·pull은 사용자가** 한다 (사용자가 "머지했어, pull해"라고 하면 pull).
+- 디자인 skill: `impeccable`(`critique`/detect — `.claude/skills/impeccable/scripts/impeccable detect --json <파일들>`), `web-design-guidelines`를 사용했다. 서브에이전트는 사용자가 요청하지 않아 쓰지 않았다 (critique를 degraded 단일 컨텍스트로 수행했다고 보고함).
+- 작업 단위가 끝날 때마다 이 파일(§0 스냅샷·§3·§4·§5)을 **바로** 갱신한다. 새 질문은 `QUESTIONS.md`에, 시안이 바뀌면 `DESIGN-SPEC.md`도.
+
+---
+
 ## 1. 역할과 목표
 - 나(Claude)는 웹디자인 전문가. 기획자의 PRD(`../prd/`)를 분석해 사용자가 가장 편하게 쓰는 사이트로 디자인한다.
 - 산출물은 `cowork/design/`에 둔다. 모르는 것·새 의견·정할 것은 **바로 `QUESTIONS.md`에 질문으로 남긴다.**
 - 이 시안과 PRD를 보고 개발자가 서비스를 개발한다 → 개발자가 읽을 문서(`DESIGN-SPEC.md`)도 같이 최신으로 유지.
-- 기준 문서: `../prd/lomeone-01-mvp-web-design-prd.md` (LM-PRD-01 v1.0) — 화면 SCR, 컴포넌트 C-xx, 수용 기준 DAC, 결정 D-x. 상위: `lomeone-00-service-master-prd.md`.
+- 기준 문서: `../prd/lomeone-01-mvp-web-design-prd.md` (LM-PRD-01 **v1.2**, 2026-10-31) — 화면 SCR, 컴포넌트 C-xx, 수용 기준 DAC, 결정 D-x. 상위: `lomeone-00-service-master-prd.md`.
 - 제품: 로미원(lomeone) — 단톡방 총무용 링크형 모임 도구. 1단계 = "로미원 약속"(가능 시간 칠하기 → 모두 되는 시간).
 
 ## 2. 저장소·브랜치 규칙 (사용자 지시)
@@ -16,7 +69,7 @@
 - 사용자가 "기존 작업은 다 없어질 것, 완전히 새 프로젝트"라고 했다 → 이 저장소의 라이프커브(apps/, packages/ 등)는 신경 쓰지 않는다. 시안은 `cowork/` 아래에서만 작업.
 - 파일 경로는 `/Users/comstering/Programming/lomeone/cowork/{prd,design}`. (처음엔 cwd에 `cowork/`가 없어 `~/Cowork/Lomeone/cowork/prd`를 찾았으나, 이 저장소의 `cowork/prd`가 정답.)
 
-## 3. 현재 상태 (v0.3 — 3차 시안, PR 대기. v0.1·v0.2는 main에 머지됨: PR #7~#11)
+## 3. 현재 상태 (v0.3 — 3차 시안, PR #14 대기. v0.1·v0.2는 main에 머지됨: PR #7~#11)
 - 시안: 동작하는 정적 HTML/CSS/JS (프레임워크 없음). 시작점 `index.html`.
 - 화면: SCR-01~12, 06b, OG·카카오 템플릿(SCR-13·14) 완료. 컴포넌트 C-01~32 중 C-26(ToolNav) 제외 완료.
 - 파일: `screens/{home,meet,new,m,my,gone,about,og,brand}.html`, `assets/css/{tokens,components}.css`, `assets/js/{shared,grid,create}.js`, `assets/logo/*.svg`.
@@ -93,6 +146,7 @@
 ## 5. 작업 로그 (최신이 위. 작업 끝날 때마다 한 줄 이상 추가)
 | 날짜 | 내용 | 산출물/PR |
 | --- | --- | --- |
+| 2026-11-04 | 세션 종료 전 인수인계 스냅샷 작성(§0): PR/브랜치 상태, 열린 질문 표, 첫 행동 순서, 확정 사항 목록 | `feat/design-v2-1` |
 | 2026-11-04 | 기획자 전달용 열린 질문 요약 작성(`QUESTIONS.md` §H, Q-23~29). 막힌 항목: Q-23 모임 수정 범위, Q-26 FAQ·방침 수치 | `feat/design-v2-1` (PR #14에 포함) |
 | 2026-10-31 | **3차 시안**: Q-19~22 반영 — 확정 바꾸는 중([바꾸기 그만두기]·현재 확정 비활성), 응답 마감 입력(토글 + C-05/C-06 단일 변형), 날짜만 확정 시간 칩, 겹침 제외 규칙 검증(코드 변경 없음, 케이스 5개 통과). DESIGN-SPEC·QUESTIONS §G 갱신 | 브랜치 `feat/design-v2-1` |
 | 2026-10-29 | **2차 시안**: 기획 답변(PRD v1.1) 반영 — 색 A·로고 A 확정(B안 `assets/archive/`), 단색·다크 로고, 파비콘, E-01~E-09, Q-02·04·05·06·07·08·09·10·11·16, S-05·06, 스켈레톤, Q-18 | 브랜치 `feat/design-v2` |
@@ -108,3 +162,8 @@
 - JS 오류 점검: 헤드리스 `--enable-logging=stderr --dump-dom`에서 `Uncaught|SyntaxError|ReferenceError` grep.
 - 색 대비는 상대 휘도 계산 스크립트로 확인하고 수치를 `DESIGN-SPEC.md` §2에 적는다 (주장하기 전에 계산).
 - `assets/js/*`는 시안용 코드. 개발 핸드오프 문서에서도 "그대로 쓰지 말고 참고용"으로 안내 중.
+- **헤드리스 캡처 함정:** 창 최소 폭 약 500px → 360px 확인은 `<iframe style="width:360px">`를 나란히 넣은 래퍼 HTML을 스크래치패드에 만들어 캡처. **시트(`?sheet=`)는 열림 애니메이션 때문에 `--virtual-time-budget`을 15000 이상**으로 줘야 완전히 열린 모습이 찍힌다(5000이면 상단만 보임). 다크 시스템이면 `?theme=light`.
+- **실측 스크립트:** 래퍼 HTML에서 iframe `contentDocument`를 읽으려면 `--allow-file-access-from-files`. 가로 넘침은 `documentElement.scrollWidth > 폭`, 주 버튼은 `getBoundingClientRect().bottom <= 높이`. 시트 안 버튼 위치는 시트가 열리기 전에 재면 틀리니 **캡처로 확인**.
+- 추천 알고리즘 검증은 `m.html`의 `function candidates`~`function best(` 구간을 잘라 Node로 실행하면 된다 (스크래치패드에 임시 스크립트).
+- 파일 수정 시 "File has been modified since read" 오류가 나면 해당 파일을 `Read`로 한 번 읽은 뒤 다시 `Write`/`Edit`. 큰 문서 수정은 python 치환 스크립트가 안전(치환 문자열이 없으면 assert로 중단되니 메시지를 확인).
+- 사용자가 `cowork/prd/*`·`QUESTIONS.md`를 작업 트리에서 직접 수정해 두면 브랜치를 바꿀 때 `git stash` → `git switch -c <새 브랜치> origin/main` → `git stash pop`으로 가져간다.
