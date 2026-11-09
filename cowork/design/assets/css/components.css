@@ -376,3 +376,13 @@ a.chip:hover, button.chip:hover { background: var(--bg-subtle); }
 /* D-8 B안: 칠하기 모드 토글 (끄면 셀에서도 세로 스크롤) */
 .slot.paint-off .cell { touch-action: pan-y; }
 .paint-toggle[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+/* ===== 모임 수정 (C-29 mode="edit", v1.3 Q-23) — 잠긴 항목은 자물쇠 + 캡션 ===== */
+.lockcap { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; line-height: 18px; color: var(--text-muted); }
+.lockcap .icon { width: 14px; height: 14px; flex: none; margin-top: 2px; }
+.day.locked { position: relative; }
+.day.locked .icon { position: absolute; top: 3px; right: 3px; width: 11px; height: 11px; stroke-width: 2.25; }
+.seg[data-locked] button { cursor: not-allowed; }
+.seg[data-locked] button[aria-checked="false"] { opacity: .5; }
+.locked-area { opacity: .6; }
+.banner .icon { flex: none; }

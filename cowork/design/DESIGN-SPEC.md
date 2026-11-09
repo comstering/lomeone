@@ -29,11 +29,12 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | SCR-02 약속 랜딩 + 용도 6종 | `screens/meet.html` | `for=team-project \| club \| dinner \| reunion \| study \| trip` |
 | SCR-03 모임 만들기 | `screens/new.html` | `state=net` (제출 시 네트워크 실패 배너) · `dl=0 \| 1 \| 2` (응답 마감: 펼침·꺼짐 / 켬 / 날짜·시각 선택됨) |
 | SCR-04 공유 시트 | `screens/new.html` (생성 직후 시트) | `sheet=1` |
-| SCR-05 이름 입력 | `screens/m.html` | `v=name` (이름에 `민수` 입력 → 중복 오류) |
+| SCR-05 이름 입력 | `screens/m.html` | `v=name` (이름에 `민수` 입력 → 중복 오류) · `v=name-full`(응답 100명 가득, R-03-10) |
 | SCR-06 칠하기 | `screens/m.html` | `v=paint` · `alt=b`(D-8 B안) · `filled=0`(빈 그리드) · `days=8`(가로 넘김) · `coach=0` · `v=paint-dow`(요일 모드) · `v=paint-closed`(응답 마감) |
 | SCR-06b 날짜만 | `screens/m.html` | `v=dateonly` |
-| SCR-07 결과 | `screens/m.html` | `v=result` · `result-one` · `result-none`(전원 없음+동률, 순위 1·1·3) · `result-short`(30분 자동 폴백) · `result-date`(날짜만) · `result-dow`(요일 모드) · `result-many`(24명) · `sheet=list \| key` |
+| SCR-07 결과 | `screens/m.html` | `v=result` · `result-one` · `result-none`(전원 없음+동률, 순위 1·1·3) · `result-short`(30분 자동 폴백) · `result-date`(날짜만) · `result-dow`(요일 모드) · `result-many`(24명) · `result-added`(재방문 응답자에게 "새 날짜가 추가됐어요", R-01-9) · `sheet=list \| key` |
 | SCR-08 총무 | `screens/m.html` | `v=admin` · `admin-empty` · `admin-date` · `admin-many` · `change=1`(확정 시간 바꾸기, [바꾸기 그만두기]) · `tm=1`(날짜만 확정 시간 칩 펼침) · `sheet=confirm \| menu \| delete \| list \| delr` |
+| SCR-08b 모임 수정 | `screens/edit.html` | `v=empty`(응답 0명) · `has`(응답 있음) · `changed`(변경 있음) · `confirmed`(확정됨) · `saving` · `over31`. 저장 → `m.html?v=admin&toast=edited&grew=1` |
 | SCR-09 확정 | `screens/m.html` | `v=confirmed` · `confirmed-part` · `confirmed-changed` · `confirmed-changed-admin` · `confirmed-admin` · `confirmed-date`(하루 종일) · `confirmed-dow`(매주) · `past` · `sheet=cal \| menu \| uncf` · `toast=uncf` |
 | 로딩 | `screens/m.html`, `my.html` | `m.html?v=loading` · `my.html?loading=1` |
 | SCR-10 내 모임 | `screens/my.html` | `empty=1` |
@@ -77,7 +78,7 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | C-03 | Button | `.btn.primary \| secondary \| ghost \| danger \| kakao` + `.lg`(52px) `.block` `.loading` | 기본 44px |
 | C-04 | TextField | `.field` + `.input` (+ `.hint` `.err` `.counter`) | 입력 16px 고정 |
 | C-05 | DatePickerMulti | `.cal` / `.dow-toggles` / `.day` | 탭 + 드래그 다중 선택, 31일 제한. **단일 선택 변형**: 응답 마감 날짜(`data-dk`, 드래그 없음, 범위 밖 `aria-disabled`) |
-| (스위치) | Switch | `.switch` (`role="switch"`, `aria-checked`) | 응답 마감 정하기. 52×32, 켜면 `--accent` |
+| C-33 | Switch | `.switch` (`role="switch"`, `aria-checked`) | 응답 마감 정하기. 52×32, 켜면 `--accent` (PRD v1.3 §8.7) |
 | C-06 | TimeRangeSelect | `.time-range` + `.select` | 시안은 `<select>`. 모바일 네이티브 피커 권장. **단일 시각 변형**: 응답 마감 시각(기본 오후 10:00), 날짜만 확정 시간(`#ct`) |
 | C-07 | ModeSegmented | `.seg` (`role="radiogroup"`) | |
 | C-08 | SlotGrid | `.slot` `data-mode="input \| heatmap \| highlight"` → §4 | 핵심 |
@@ -100,12 +101,14 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | C-25 | DateOnlyChoice | `.date-choice` | |
 | C-27 | HowItWorks | `.how` | |
 | C-28 | HeroDemo | `home.html`의 `.demo` | CSS 애니메이션, reduced-motion 대응 |
-| C-29 | MeetCreateForm | `create.js` `createForm()` | SCR-02·03 공통 |
+| C-29 | MeetCreateForm | `create.js` `createForm()` | SCR-02·03 공통. **`mode="edit"` 변형(모임 수정)**: `createForm(root, { edit: "empty" \| "has" \| "confirmed" })` — 잠긴 항목은 자물쇠(`.day.locked`, `.lockcap` 캡션), 모드·날짜 방식 `.seg[data-locked]`, 확정 시 날짜·시간 `.locked-area` + `inert`. 하단 버튼 "변경 저장"(바꾼 내용이 없으면 비활성 + 이유), 저장하면 `saved` 이벤트 (`detail.grew` = 날짜·시간을 늘렸는지 → [단톡방에 알리기]) |
 | C-30 | FAQAccordion | `.faq` (`<details>`) | JS 없음 |
 | C-31 | SubmitBar | `.submit-bar` | `env(safe-area-inset-bottom)` 포함, ≥1024px에서는 흐름 안으로 |
 | C-32 | AdminActions | `m.html`의 `#sh-menu` `#sh-confirm` `#sh-del` | |
-| 기능 아이콘 6종 | `shared.js` `featureIcon(name)` · `brand.html` §5 | 약속·사다리·팀나누기·돌림판·자리배치·롤링페이퍼 (선 2.25px · 채움 1톤). 1단계는 약속만, "곧 나와요" 카드에 4종 |
-| 로딩 | `.skeleton` | 모임 페이지·내 모임 |
+| C-37 | FeatureIcon | `shared.js` `featureIcon(name)` · `brand.html` §5 | 약속·사다리·팀나누기·돌림판·자리배치·롤링페이퍼 (선 2.25px · 채움 1톤). 1단계는 약속만, "곧 나와요" 카드에 4종 |
+| C-36 | Skeleton | `.skeleton` | 모임 페이지·내 모임 |
+| C-34 | ResponderListSheet | `m.html`의 `#sh-list` (`.rl`) | 응답한 사람 N명, 총무는 행마다 삭제 |
+| C-35 | DateBarList | `m.html`의 `.bars` (`.bar-row`) | 날짜만 결과 막대 + "돼요 5 · 애매 2 · 민수 안 돼요" (이름 2명까지, 3명부터 "안 돼요 n명") |
 | C-26 | ToolNav | **미작성** (1단계는 홈 "곧 나와요"만) | |
 
 ## 4. SlotGrid 구현 메모 (C-08) — 가장 중요한 컴포넌트
@@ -173,6 +176,11 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 13. **응답 마감 시각 기준(Q-20)** — 시안의 "지금"은 2026-10-28 14:00 고정이라 오늘 오후 3시 이전 시각이 비활성이에요. 실제는 서버 시각 + 1시간. 요일 모드 상한은 오늘부터 4주.
 12. **공유 시트(E-08·Q-09)** — 썸네일을 가로 배치로 줄여 360×640 첫 화면에 [카카오톡으로 보내기]와 [카톡 '나와의 채팅'에 저장]이 보여요. 나와의 채팅 저장은 로그인 필요한 "나에게 보내기" API가 아니라 일반 카카오 공유로 총무 링크를 보내고 받는 곳을 '나와의 채팅'으로 고르게 하는 방식 (개발은 D-4 확인).
 
+14. **모임 수정(Q-23, PRD v1.3 R-01-9)** — 새 컴포넌트 없이 C-29 `mode="edit"`. 규칙: 응답 0명 = 전부 수정 · 응답 있음 = 이름 / 날짜 추가만(응답 있는 날짜는 자물쇠, 응답 없는 날짜만 빼기) / 시간 범위 넓히기만(줄이는 쪽 `<option disabled>`) / 마감 변경·해제 / 모드·날짜 방식 잠김 · 확정됨 = 이름·마감만. 시안은 "응답 있는 날짜"를 3일(10/29~31)로 하드코딩. 실제는 서버가 날짜별 응답 유무를 내려줘야 해요 (BACKEND-REQUESTS에 올릴 것).
+15. **인원 100명(R-03-10)** — 입력 한도 UI는 없고, 가득 차면 이름 입력 화면에 info + [결과 보기]. 서버에서 강제.
+16. **FAQ·방침 문구 키(Q-26)** — `shared.js`의 `COPY`(retention·retentionRule·capacity·expired) 한 곳에서 FAQ·개인정보처리방침·만료 화면이 같이 쓴다. D-3 법률 검토 후 이 값만 고친다. 구현도 i18n/문구 키 하나로.
+17. **날짜 키 로컬화** — `create.js`의 `key()`가 UTC 변환 때문에 한국 시간에서 하루 밀리던 문제를 로컬 날짜로 고쳤어요(빠른 날짜 칩 위치가 어긋나던 원인). 개발도 날짜 문자열을 만들 때 `toISOString()`을 쓰지 마세요.
+
 ## 9. QA 체크 (PRD §13) — 현재 상태
 
 | 항목 | 상태 |
@@ -182,7 +190,7 @@ URL 쿼리로 상태를 전환해요: `?theme=dark` · `?inapp=1`(카톡 인앱 
 | DAC-05 대비 | 주요 조합 계산 (§2). 전수 검사 미실시 |
 | DAC-06 색각 이상 | 계산 시뮬레이션 완료(Machado 1·2·3형, 라이트/다크): 히트맵 인접 단계 ΔE ≥ 5. 전원 칸은 테두리 + 줄무늬 병행. 실사용자 확인 미실시 |
 | DAC-07 상태 체크리스트 | 주요 상태 + 2차 추가 상태(마감·요일·날짜만·20명+·로딩) 구현. 눌림(active) 상태는 버튼만, 나머지 일부 누락 |
-| DAC-08 문구 | PRD §10.2 문구 사용. 임시 문구 없음 (법적 문서 샘플 본문과 FAQ 답변은 예외 — FAQ는 제가 쓴 초안) |
+| DAC-08 문구 | PRD v1.3 §10.2 문구 사용(Q-25 확정·수정 반영). 예외: 법적 문서 샘플 본문(D-3 대기), 시안이 새로 쓴 소수 문구는 QUESTIONS §I에 올림 |
 | DAC-09 카톡 미리보기 실제 크기 | `og.html`에 정사각 크롭·최장 이름 케이스 포함, 실제 카톡 확인 **미실시** |
 | DAC-10 로고 16px | 파비콘 16/32/180 PNG + SVG 제작(`assets/favicon/`), `brand.html`에서 확인. 카톡 썸네일 실물 확인 미실시 |
 | 320px / 최장 이름 | 모임 이름 40자·이름 20자 샘플은 `brand.html`에 일부. 320px 전수 확인 미실시 |
