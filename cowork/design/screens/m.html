@@ -57,19 +57,19 @@
 <script>
   /* 헤더 설정은 shared.js 가 실행되기 전에 */
   const Q = new URLSearchParams(location.search), V = Q.get("v") || "result";
-  const RES = ["result", "result-one", "result-none", "result-short", "result-date", "result-dow", "result-many"];
+  const RES = ["result-added", "result", "result-one", "result-none", "result-short", "result-date", "result-dow", "result-many"];
   const ADM = ["admin", "admin-empty", "admin-date", "admin-many"];
   const CNF = ["confirmed", "confirmed-part", "confirmed-changed", "confirmed-changed-admin", "confirmed-admin", "confirmed-date", "confirmed-dow", "past"];
   const hdr = document.getElementById("hdr");
   const kindOf = () => RES.includes(V) ? "share" : ADM.includes(V) ? "admin" : ["confirmed-admin", "confirmed-changed-admin"].includes(V) ? "more" : ["paint", "paint-dow", "paint-closed", "dateonly"].includes(V) ? "me" : "";
-  const compact = V === "name" || CNF.includes(V) || V === "loading";
+  const compact = V === "name" || V === "name-full" || CNF.includes(V) || V === "loading";
   hdr.dataset.header = compact ? "compact" : "back"; hdr.dataset.title = "팀플 회의"; hdr.dataset.href = "m.html?v=name";
 </script>
 <script src="../assets/js/shared.js"></script>
 <script src="../assets/js/grid.js"></script>
 <script>
 (function () {
-  const app = document.getElementById("app"), days = +(Q.get("days") || 3), $ = (s) => document.querySelector(s);
+  const app = document.getElementById("app"), days = +(Q.get("days") || (V === "result-added" ? 4 : 3)), $ = (s) => document.querySelector(s);
   const IS_ADMIN = ADM.includes(V) || ["confirmed-admin", "confirmed-changed-admin"].includes(V) || (V === "confirmed-date" && !!Q.get("admin"));
   const CHANGE = !!Q.get("change");
   const CUR = { d: 0, a: 19, b: 21 };                                       // 현재 확정 시간 (수 19:00–21:00)
@@ -149,9 +149,11 @@
   /* 날짜만 모드 샘플 (Q-04): [날짜, 요일, 돼요, 애매] — 점수 = 돼요 1 + 애매 0.5, 동률이면 돼요 수 → 이른 날짜 */
   const DATES = [["11월 8일", "토", 5, 0], ["11월 9일", "일", 3, 2], ["11월 15일", "토", 4, 1], ["11월 16일", "일", 2, 1], ["11월 22일", "토", 4, 0], ["11월 23일", "일", 1, 2]];
   const dscore = (r) => r[2] + r[3] * 0.5;
+  const DNO = { "11월 16일": ["하준", "예린"], "11월 22일": ["민수"], "11월 23일": ["서연", "하준"] };   // 날짜별 "안 돼요" 응답자 (돼요+애매 합이 5보다 작은 날)
+  const noText = (r) => { const ns = DNO[r[0]] || []; return ns.length === 0 ? "" : ns.length <= 2 ? `${ns.join("·")} 안 돼요` : `안 돼요 ${ns.length}명`; };
   const dateRank = DATES.map((r, i) => ({ r, i })).sort((a, b) => dscore(b.r) - dscore(a.r) || b.r[2] - a.r[2] || a.i - b.i).slice(0, 3);
   const dateCards = (admin) => dateRank.map(({ r }) => { const no = 5 - r[2] - r[3], rank = 1 + dateRank.filter((y) => dscore(y.r) > dscore(r)).length;
-    const who = `${no === 0 && r[3] === 0 ? `<span class="all-badge">${icon("check")}전원 가능</span>` : ""}돼요 ${r[2]} · 애매 ${r[3]}${no ? ` · <span class="miss">${no}명 불가</span>` : ""}`, when = `${r[0]} (${r[1]})`;
+    const who = `${no === 0 && r[3] === 0 ? `<span class="all-badge">${icon("check")}전원 가능</span>` : ""}돼요 ${r[2]} · 애매 ${r[3]}${no ? ` · <span class="miss">${noText(r)}</span>` : ""}`, when = `${r[0]} (${r[1]})`;
     const body = `<span class="rank">${rank}</span><span><span class="when">${when}</span><span class="who">${who}</span></span>`;
     return admin ? `<div class="best ${rank === 1 ? "first" : ""}">${body}<button class="cta btn ${rank === 1 ? "primary" : "secondary"} block" data-open="#sh-confirm" data-when="${when}" data-c="${r[2] + r[3]}" data-date="1">이 날로 확정</button></div>` : `<div class="best ${rank === 1 ? "first" : ""}">${body}</div>`; }).join("");
   const dateBars = `<div class="bars" role="list" aria-label="날짜별 응답">${DATES.map((r) => `<div class="bar-row ${dateRank[0].r === r ? "top" : ""}" role="listitem"><div class="d">${r[0]}<small>${r[1]}요일</small></div><div class="bar-track" aria-hidden="true"><i class="y" style="width:${r[2] * 20}%"></i><i class="m" style="width:${r[3] * 20}%"></i></div><div class="bar-num">돼요 ${r[2]} · 애매 ${r[3]}</div></div>`).join("")}</div><div class="legend" style="margin-top:12px"><span class="scale"><i style="background:var(--accent)"></i></span>돼요 <span class="scale"><i style="background:var(--heat-2)"></i></span>애매</div>`;
@@ -166,6 +168,16 @@
         <input class="input" id="nm" name="nickname" maxlength="20" placeholder="예: 지원" autocomplete="nickname" spellcheck="false" aria-describedby="nh ne"><span class="hint" id="nh">별명도 괜찮아요</span>
         <span class="err" id="ne" hidden>이미 있는 이름이에요. 이름 뒤에 글자를 붙이거나 별명을 써 주세요</span></div>
       <div class="submit-bar"><div class="inner"><a class="btn primary lg block" id="go" href="m.html?v=${Q.get("mode") === "date" ? "dateonly" : Q.get("mode") === "dow" ? "paint-dow" : "paint"}" aria-disabled="true">시간 고르기</a><span class="trust">로그인 없이 · 30초면 끝</span></div></div>`,
+
+    /* SCR-05 인원 가득 (R-03-10: 한 모임 최대 100명) — 입력 한도 UI 없이 이름 입력 자리에 info만 */
+    "name-full": () => `${summary(100)}
+      <div class="task"><h2 class="t-h2">가능한 시간을 알려주세요</h2></div>
+      <div class="banner info" role="status" style="margin-bottom:var(--s-6)">${icon("info")}<span>응답 인원(100명)이 다 찼어요</span></div>
+      <div class="field"><label for="nm">이름</label><input class="input" id="nm" name="nickname" placeholder="예: 지원" disabled aria-describedby="nf"><span class="hint" id="nf">총무가 응답을 지우면 자리가 다시 생겨요</span></div>
+      <div class="submit-bar"><div class="inner"><a class="btn primary lg block" href="m.html?v=result">결과 보기</a></div></div>`,
+
+    /* SCR-07 재방문 응답자 + 총무가 날짜를 추가한 뒤 (R-01-9) */
+    "result-added": () => `<div class="banner info" role="status" style="margin-top:var(--s-3);flex-wrap:wrap">${icon("info")}<span style="flex:1;min-width:0">새 날짜가 추가됐어요. 내 응답을 확인해 주세요</span><a class="btn secondary" href="m.html?v=paint&days=4" style="margin-left:0">내 응답 수정</a></div>${views.result({ sum: { dates: "10월 29일(수) ~ 11월 1일(토)" } })}`,
 
     /* SCR-06 시간 칠하기 (+ 요일 모드 / 마감) */
     paint: (o = {}) => `<div class="split"><div>
@@ -199,7 +211,7 @@
     /* SCR-08 총무 */
     admin: () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div><p class="t-caption" style="margin-bottom:8px">칸을 길게 눌러 직접 시간을 골라 확정할 수도 있어요</p>${legend(N)}<div style="margin-top:12px">${heat("g")}</div></div>
       <aside class="stack-lg"><div><h1 class="t-h1">${N}명 응답했어요</h1>
-        ${CHANGE ? `<div class="banner info" style="margin-top:12px;flex-wrap:wrap">${icon("info")}<span style="flex:1;min-width:0">확정 시간을 바꾸는 중이에요. 현재: 수 10/29 19:00–21:00<br><span class="t-caption" style="color:inherit;opacity:.85">참여자에게는 새로 확정하기 전까지 지금 확정이 그대로 보여요</span></span><a class="btn secondary" href="m.html?v=confirmed-admin" style="margin-left:0;flex-basis:100%">바꾸기 그만두기</a></div>` : `<div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div>`}</div>
+        ${CHANGE ? `<div class="banner info" style="margin-top:12px;flex-wrap:wrap">${icon("info")}<span style="flex:1;min-width:0">확정 시간을 바꾸는 중이에요. 현재: 수 10/29 19:00–21:00<br><span class="t-caption" style="color:inherit;opacity:.85">새 시간을 확정하기 전까지 참여자에게는 지금 시간이 그대로 보여요</span></span><a class="btn secondary" href="m.html?v=confirmed-admin" style="margin-left:0;flex-basis:100%">바꾸기 그만두기</a></div>` : `<div style="margin-top:12px"><button class="btn kakao block lg" data-toast="카카오톡 공유 창이 열려요 (시안)">${icon("chat")} 단톡방에 다시 알리기</button></div>`}</div>
         ${bestSection()}${chipsHtml(true)}</aside></div>${bar(`<a class="btn secondary lg block" href="m.html?v=name">나도 응답하기</a>`)}`,
 
     "admin-date": () => `<div class="split af" style="margin-top:var(--s-4)"><div><div class="sec-title"><h2 class="t-h2">전체 보기</h2></div>${dateBars}</div>
@@ -239,7 +251,7 @@
   views["confirmed-dow"] = () => views.confirmed({ date: "매주 수요일", time: "오후 7:00 – 9:00", count: "5명 중 5명 가능" });
   views.past = () => views.confirmed({ past: 1 });
 
-  if (["name", "dateonly", "admin-empty", "loading", "paint-closed", ...CNF].includes(V)) app.dataset.narrow = "1";
+  if (["name", "name-full", "dateonly", "admin-empty", "loading", "paint-closed", ...CNF].includes(V)) app.dataset.narrow = "1";
   app.innerHTML = (views[V] || views.result)();
 
   /* 헤더 우측 액션 */
@@ -255,9 +267,9 @@
   const created = ["10/27 21:14", "10/27 21:31", "10/27 22:05", "10/28 08:47", "10/28 09:12"];
   const listRows = NAMES.map((n, i) => `<li><button class="nm" data-n="${n}"><b>${n}</b><small>${created[i % 5]} 응답</small></button>${IS_ADMIN ? `<button class="btn secondary" data-open="#sh-delr" data-who="${n}">응답 삭제</button>` : ""}</li>`).join("");
   const menu = V === "confirmed-admin" || V === "confirmed-changed-admin"
-    ? `<a class="menu-item" href="m.html?v=admin&change=1">${icon("clock")} 확정 시간 바꾸기</a><button data-open="#sh-uncf">${icon("back")} 확정 취소</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`
+    ? `<a class="menu-item" href="edit.html?v=confirmed">${icon("pencil")} 모임 수정</a><a class="menu-item" href="m.html?v=admin&change=1">${icon("clock")} 확정 시간 바꾸기</a><button data-open="#sh-uncf">${icon("back")} 확정 취소</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`
     : RES.includes(V) ? `<button data-copy="링크를 복사했어요">${icon("link")} 링크 복사</button>`
-    : `<button data-toast="모임 수정 화면으로 이동해요">${icon("pencil")} 모임 수정 (이름·날짜 추가)</button><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`;
+    : `<a class="menu-item" href="edit.html?v=${V === "admin-empty" ? "empty" : "has"}">${icon("pencil")} 모임 수정</a><button data-copy="총무 링크를 복사했어요">${icon("key")} 총무 링크 복사</button><button class="danger" data-open="#sh-del">${icon("trash")} 모임 삭제</button>`;
   function chipTimes() {   // Q-21 빠른 칩: 점심 12:00 · 저녁 18:00 · 저녁 19:00, 용도 랜딩 모임은 해당 시작 시간을 맨 앞에
     const base = [["점심 12:00", "12:00"], ["저녁 18:00", "18:00"], ["저녁 19:00", "19:00"]];
     if (!USE) return base;
@@ -270,7 +282,7 @@
     ${V === "admin-date" ? `<div class="field" id="tm"><span class="lbl">시간 <span class="opt">(선택)</span></span>
       <div class="row" style="justify-content:space-between"><b id="tm-v" aria-live="polite">하루 종일</b><button type="button" class="btn ghost" id="tm-open" style="min-height:36px" aria-expanded="false" aria-controls="tm-box">시간 정하기</button></div>
       <div id="tm-box" hidden class="stack" style="gap:var(--s-2)"><div class="chips wrap-chips" role="group" aria-label="빠른 시간">${chipTimes().map(([l, t]) => `<button type="button" class="chip" aria-pressed="false" data-t="${t}" data-l="${l}">${l}</button>`).join("")}</div>
-        <div class="row"><label for="ct" class="sr-only">직접 선택</label><select class="select" id="ct" style="flex:1"><option value="">직접 선택</option>${times.map((t) => `<option>${t}</option>`).join("")}</select><button type="button" class="btn ghost" id="tm-reset" style="min-height:36px">하루 종일로</button></div></div>
+        <div class="row"><label for="ct" class="sr-only">직접 선택</label><select class="select" id="ct" style="flex:1"><option value="">직접 선택</option>${times.map((t) => `<option>${t}</option>`).join("")}</select><button type="button" class="btn ghost" id="tm-reset" style="min-height:36px">하루 종일로 두기</button></div></div>
       <span class="hint">시간은 나중에 바꿀 수 있어요</span></div>` : ""}
     <div class="modal-btns"><a class="btn primary lg" href="${okHref}">${CHANGE ? "시간 바꾸기" : "확정하기"}</a><button class="btn ghost" data-close>취소</button></div></div></div>
   <div class="sheet" id="sh-menu" role="dialog" aria-modal="true" aria-label="메뉴"><div class="handle"></div><div class="menu">${menu}<button data-close>닫기</button></div></div>
@@ -351,7 +363,7 @@
     });
   }
   if (CNF.includes(V) && V !== "past") confetti($("#cf"));
-  if (Q.get("toast")) setTimeout(() => (Q.get("toast") === "uncf" ? toast("확정을 취소했어요. 단톡방에 알릴까요?", { label: "알리기" }) : toast("응답을 보냈어요")), 250);
+  if (Q.get("toast")) setTimeout(() => (Q.get("toast") === "uncf" ? toast("확정을 취소했어요. 단톡방에 알릴까요?", { label: "알리기" }) : Q.get("toast") === "edited" ? (Q.get("grew") ? toast("모임을 수정했어요", { label: "단톡방에 알리기" }) : toast("모임을 수정했어요")) : toast("응답을 보냈어요")), 250);
   if (Q.get("sheet")) setTimeout(() => {
     const id = { confirm: "#sh-confirm", menu: "#sh-menu", delete: "#sh-del", cal: "#sh-cal", uncf: "#sh-uncf", list: "#sh-list", key: "#sh-key", delr: "#sh-delr" }[Q.get("sheet")];
     if (!id) return;

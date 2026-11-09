@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>모임 수정 — 로미원</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="../assets/css/tokens.css">
+<link rel="stylesheet" href="../assets/css/components.css">
+<style>
+  main { padding-block: var(--s-6) calc(var(--bar-h) + 24px); }
+  @media (min-width: 1024px) { main { padding-bottom: var(--s-16); } .submit-bar { margin-top: var(--s-6); } }
+</style>
+</head>
+<body>
+<div class="page">
+  <div data-header="back" data-title="모임 수정" data-href="m.html?v=admin"></div>
+  <main class="wrap narrow">
+    <div id="form"></div>
+  </main>
+  <div class="only-desktop" data-footer></div>
+</div>
+<script src="../assets/js/shared.js"></script>
+<script src="../assets/js/create.js"></script>
+<script>
+  /* 모임 수정 (SCR-08 ⋯ → 모임 수정) = C-29 MeetCreateForm mode="edit". 모바일은 전체 화면 페이지(시트 아님 — 달력 높이), 데스크톱은 가운데 560px
+     ?v=empty      응답 0명: 전부 수정 가능 (모드·날짜 방식 포함)
+     ?v=has        응답 1명+: 이름 · 날짜 추가(응답 있는 날짜는 자물쇠) · 시간 넓히기만 · 마감 / 모드·방식 잠김
+     ?v=changed    has + 이름을 바꿔 [변경 저장] 활성
+     ?v=confirmed  확정됨: 이름·마감만, 날짜·시간 영역 잠금 + "확정 취소" 안내
+     ?v=saving     저장 중   ·   ?v=over31 날짜 31일 가득 */
+  const V = new URLSearchParams(location.search).get("v") || "has";
+  const base = { name: "팀플 회의", from: "09:00", to: "23:00", more: true };
+  const dl = { dlOpen: true, dlPick: "2026-10-30" };
+  const cfg = {
+    empty: { edit: "empty" },
+    has: { edit: "has", ...dl },
+    changed: { edit: "has", ...dl, changed: "팀플 회의 (2차)" },
+    confirmed: { edit: "confirmed", ...dl },
+    saving: { edit: "has", ...dl, changed: "팀플 회의 (2차)", saving: true },
+    over31: { edit: "empty", over31: true },
+  }[V] || { edit: "has", ...dl };
+  const f = document.getElementById("form");
+  createForm(f, { ...base, ...cfg });
+  f.addEventListener("saved", (e) => {
+    const to = { empty: "admin-empty", over31: "admin-empty", confirmed: "confirmed-admin" }[V] || "admin";
+    location.href = `m.html?v=${to}&toast=edited${e.detail.grew ? "&grew=1" : ""}`;
+  });
+</script>
+</body>
+</html>
