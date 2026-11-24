@@ -35,6 +35,14 @@
     info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01", trash: "M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13", chat: "M4 5h16v11H9l-5 4z", plus: "M12 5v14M5 12h14",
     lock: "M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3", up: "m5 15 7-7 7 7"
   };
+  /* 문구 키 — FAQ·개인정보처리방침·만료 화면이 같은 문구를 쓴다 (Q-26: 🔴 D-3 법률 검토 전 잠정값, 검토 후 여기 한 곳만 고친다) */
+  window.COPY = {
+    retention: "모임의 마지막 날짜로부터 90일이 지나면 자동으로 지워져요. 매주 모임은 마지막 응답·수정일로부터 90일이에요. 총무는 언제든 바로 지울 수 있어요",   // FAQ (PRD §10.2)
+    retentionRule: "모임 마지막 날짜 + 90일 (매주 모임은 마지막 응답·수정일 + 90일)",                                                                  // 방침 표 보관 칸
+    capacity: "한 모임에 100명까지 응답할 수 있어요. 20명이 넘으면 '외 n명'을 눌러 전체를 볼 수 있어요",
+    expired: "모임 날짜가 지나 90일 뒤 자동으로 지워졌어요",
+  };
+  document.querySelectorAll("[data-copy-key]").forEach((el) => { el.textContent = COPY[el.dataset.copyKey] || el.textContent; });
   window.icon = (n, extra = "") => `<svg class="icon ${extra}" viewBox="0 0 24 24" aria-hidden="true"><path d="${P[n] || ""}"/></svg>`;
   window.lmSymbol = (s = 28) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><defs><clipPath id="lmc"><circle cx="11.5" cy="16" r="9"/></clipPath></defs><circle cx="11.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="3"/><circle cx="20.5" cy="16" r="9" fill="var(--accent)" clip-path="url(#lmc)"/></svg>`;
   const logo = `<a class="logo" href="home.html" aria-label="로미원 홈" translate="no">${window.lmSymbol()}<span>lomeone</span><span class="ko">로미원</span></a>`;

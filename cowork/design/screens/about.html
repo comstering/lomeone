@@ -36,8 +36,8 @@
     el.innerHTML = `<h1 class="t-h1">개인정보처리방침</h1><p class="t-caption">시행일 2026년 11월 1일 (샘플)</p>
     <nav class="toc" aria-label="목차"><a href="#s1">1. 수집하는 항목</a><a href="#s2">2. 보관과 삭제</a><a href="#s3">3. 문의</a></nav>
     <h2 class="t-h2" id="s1">1. 수집하는 항목</h2><p>로미원은 모임을 만들고 응답하는 데 꼭 필요한 정보만 받아요.</p>
-    <table><thead><tr><th>항목</th><th>이유</th><th>보관</th></tr></thead><tbody><tr><td>이름(별명 가능)</td><td>누가 응답했는지 보여주기 위해</td><td>모임 마지막 날짜 + 90일</td></tr><tr><td>가능한 시간</td><td>모두 되는 시간을 계산하기 위해</td><td>모임 마지막 날짜 + 90일</td></tr></tbody></table>
-    <h2 class="t-h2" id="s2">2. 보관과 삭제</h2><p>기한이 지나면 자동으로 지워져요.</p><h2 class="t-h2" id="s3">3. 문의</h2><p>hello@lomeone.com</p>`;
+    <table><thead><tr><th>항목</th><th>이유</th><th>보관</th></tr></thead><tbody><tr><td>이름(별명 가능)</td><td>누가 응답했는지 보여주기 위해</td><td>${COPY.retentionRule}</td></tr><tr><td>가능한 시간</td><td>모두 되는 시간을 계산하기 위해</td><td>${COPY.retentionRule}</td></tr></tbody></table>
+    <h2 class="t-h2" id="s2">2. 보관과 삭제</h2><p>${COPY.retention}. (보관 기간은 법률 검토 전 잠정값이에요 · 시안)</p><h2 class="t-h2" id="s3">3. 문의</h2><p>hello@lomeone.com</p>`;
   } else if (D === "terms") {
     document.title = "이용약관 — 로미원";
     el.innerHTML = `<h1 class="t-h1">이용약관</h1><p class="t-caption">시행일 2026년 11월 1일 (샘플)</p><nav class="toc"><a href="#a">제1조 목적</a></nav><h2 class="t-h2" id="a">제1조 목적</h2><p>이 약관은 로미원이 제공하는 서비스의 이용 조건을 정해요.</p>`;
