@@ -17,4 +17,4 @@
 - 응답 목록 조회에 `updatedAt`/ETag 제공(폴링 시 304로 비용 절감).
 - OG용 **공개 요약 조회**(총무 키 없이 제목·응답 수·확정 슬롯·상태만) — Q-4 확정 시 확정.
 
-> 상세 스키마는 Q-1(계약 방식) 결정 후 작성.
+> **상세 계약: `openapi-draft.yaml` (v0.1 초안, Q-9/Q-10 권장안 포함 — 🟡 확정 전).** 경로: POST /meets · GET·DELETE /meets/{id} · PUT·DELETE /meets/{id}/confirmation · GET /meets/{id}/responses · PUT·DELETE /meets/{id}/responses/{responderId} · GET /public/meets/{id}/summary
