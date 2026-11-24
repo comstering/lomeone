@@ -12,6 +12,6 @@
 | Q-6 | 테스트 전략: Vitest(추천 알고리즘) + Playwright(카톡 인앱 뷰포트 E2E) 범위 | → DEV-12 |
 | Q-7 | 분석·이벤트 로그(F-19) 도구 | 비교 분석 작성함(`ANALYTICS-COMPARISON.md`). **사용자가 DevOps 검증 후 나중에 선택**(2026-10-31). 프론트는 어댑터 구조로 대비 |
 | Q-8 | 추천 계산 위치 | → DEV-8 |
-| Q-9 | 슬롯 전송 포맷(비트맵 vs 인덱스 배열), 응답자 토큰 발급 주체(클라이언트 생성 권장) | OpenAPI 초안에서 확정 |
-| Q-10 | 에러 포맷 표준(problem+json 여부), 엔드포인트 목록 | OpenAPI 초안에서 확정 |
-| Q-11 | ARCHITECTURE.md 초안 승인 | 사용자 검토 대기 |
+| Q-9 | 슬롯 전송 포맷(비트맵 vs 인덱스 배열), 응답자 토큰 발급 주체(클라이언트 생성 권장) | 🟡 `openapi-draft.yaml`에 권장안 반영(인덱스 배열 `availability.yes/maybe`, 클라이언트 생성 UUID/토큰), 사용자 확정 대기 |
+| Q-10 | 에러 포맷 표준(problem+json 여부), 엔드포인트 목록 | 🟡 problem+json + `code` 분기, 엔드포인트 6경로(초안) — 사용자 확정 대기 |
+| Q-11 | ARCHITECTURE.md 초안 승인 | → DEV-13 (PR #13 머지) |

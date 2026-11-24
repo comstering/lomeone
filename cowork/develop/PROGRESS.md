@@ -2,13 +2,13 @@
 
 > **새 세션은 이 파일부터 읽는다.** 그다음 `DECISIONS.md` → `OPEN-QUESTIONS.md` → `ARCHITECTURE.md` → `CLAUDE.md`(규칙).
 > 작업 단위가 끝날 때마다 §3·§4·§6을 **그 자리에서** 갱신한다. 세션은 언제 끊길지 모른다.
-> 최종 갱신: 2026-11-04 (세션 종료 직전 정리)
+> 최종 갱신: 2026-11-08
 
 ## 0. 30초 요약
 - **무엇**: 로미원(lomeone) 1단계 "약속"(가능 시간 칠하기 → 모두 되는 시간 추천) **프론트엔드**를 만든다. 기획 `cowork/prd/`(PRD v1.1), 시안 `cowork/design/`(v0.2).
 - **스택(확정)**: Next.js 16 App Router · Vercel · Tailwind 4 · SWR 폴링 · OpenAPI 계약 + MSW 목. **백엔드는 사용자가 따로 구현해 API로 제공**(이 레포는 프론트 전용).
-- **지금 단계**: 설계 합의 끝, **코드는 아직 0줄.** `ARCHITECTURE.md` 초안이 PR #13에서 사용자 검토 대기.
-- **다음에 할 일**: §4 참고. 가장 먼저 PR #13 머지 여부 확인.
+- **지금 단계**: 설계 합의 끝(ARCHITECTURE 승인=DEV-13), **코드는 아직 0줄.** `openapi-draft.yaml` v0.1 작성 → PR로 사용자 검토 대기(Q-9/Q-10 확정 필요).
+- **다음에 할 일**: §4 참고. 디자인은 v0.3(main)이라 `DESIGN-SPEC.md` 재독 필요.
 
 ## 1. 역할과 사용자 선호
 - 나(Claude)는 전문 개발자. 사용자와 **논의하며 하나씩 결정**하는 방식을 선호한다 (질문을 설명해 주면 항목별로 답함). 결정은 즉시 `DECISIONS.md`에 `DEV-n`으로 기록.
@@ -30,7 +30,9 @@
 | 항목 | 상태 |
 | --- | --- |
 | PR #12 (개발 컨텍스트·결정·분석 비교) | ✅ 머지됨, 로컬 `main` = `f8c7e5e` |
-| **PR #13** `docs/architecture` (ARCHITECTURE.md 초안 + 이 PROGRESS 갱신) | 🟡 **열림, 사용자 검토 대기** |
+| PR #13 (ARCHITECTURE.md 초안) | ✅ 머지 (DEV-13) |
+| PR #14 (디자인 v0.3) | ✅ 머지. `origin/main`=`f181ab5` |
+| `docs/openapi-draft` (OpenAPI 초안) | 🟡 PR 검토 대기 |
 | 나머지 로컬 브랜치(`design`, `prd`, `feat/*`, `fix/design-review`, `docs/design-progress`) | 모두 머지 완료(미머지 커밋 0). 삭제는 사용자 지시 시 |
 | 코드 | 없음. 라이프커브 코드(`apps/`, `packages/engine`, `packages/rules`, `docs/lifecurve/`)는 아직 그대로 |
 
@@ -70,8 +72,8 @@
 - 루트 `CLAUDE.md` 로미원용으로 재작성 (현재는 라이프커브 내용)
 
 ## 4. 다음 할 일 (순서대로)
-1. **PR #13 상태 확인.** 머지됐으면 `git fetch origin main:main` 후 새 브랜치로 진행. 사용자가 수정 요청을 남겼으면 `ARCHITECTURE.md`에 반영(Q-11 해소 → `DECISIONS.md`에 DEV-13 기록).
-2. **OpenAPI 초안 작성** (`packages/api/openapi.yaml` 위치는 모노레포 생성 전이라면 `cowork/develop/openapi-draft.yaml`로 먼저): 엔드포인트(모임 생성/조회/확정/확정취소/삭제, 응답 PUT/삭제, 공개 요약, (P1) 장소·마감), 에러 코드(409 이름 중복, 410 만료·삭제, 확정됨), ETag/`updatedAt`, 헤더(`X-Admin-Key`, 응답자 토큰). Q-9·Q-10 결정을 사용자와 확인하며 확정. 끝나면 `BACKEND-REQUESTS.md`를 완성해 사용자에게 전달.
+1. ~~PR #13 확인~~ 완료(머지, DEV-13).
+2. **OpenAPI 초안** — v0.1 작성함(`openapi-draft.yaml`). 남은 일: 사용자와 Q-9·Q-10 확정 → DEV-14 기록, 디자인 v0.3 대비 누락 필드 점검, `BACKEND-REQUESTS.md` 최종본 전달. (원래 지침: (`packages/api/openapi.yaml` 위치는 모노레포 생성 전이라면 `cowork/develop/openapi-draft.yaml`로 먼저): 엔드포인트(모임 생성/조회/확정/확정취소/삭제, 응답 PUT/삭제, 공개 요약, (P1) 장소·마감), 에러 코드(409 이름 중복, 410 만료·삭제, 확정됨), ETag/`updatedAt`, 헤더(`X-Admin-Key`, 응답자 토큰). Q-9·Q-10 결정을 사용자와 확인하며 확정. 끝나면 `BACKEND-REQUESTS.md`를 완성해 사용자에게 전달.
 3. **초기화 PR**: 라이프커브 삭제(ARCHITECTURE §9 목록) + 새 모노레포 골격(`apps/web`, `packages/core|api|mocks`) + CI(typecheck·lint·test·build·번들 예산) + 루트 `CLAUDE.md` 재작성. 시작 전에 Next 16·Turborepo 설치 버전 문서 확인.
 4. **`core` 구현(TDD)**: 슬롯 모델 → 히트맵 → 추천(AC-04-1 12건+) → resolveView → ics.
 5. **SlotGrid 프로토타입** + INP 실측 → 이후 화면(홈/랜딩 → 생성 → 공유 → 응답 → 결과 → 총무/확정 → 내 모임 → gone).
@@ -88,11 +90,13 @@
 | `BACKEND-REQUESTS.md` | 백엔드에 요청할 API 요구(초안) |
 | `ANALYTICS-COMPARISON.md` | Q-7 분석 도구 비교(웹 검색 요약 기반 → 도입 전 각 저장소에서 재확인) |
 | `ARCHITECTURE.md` | 프론트 설계 초안 |
+| `openapi-draft.yaml` | API 계약 초안 v0.1 (🟡 Q-9/Q-10 권장안) |
 | 메모리 | `develop-handoff-progress.md`(시작 시 이 파일 읽기 규칙) — 사용자 홈 `.claude/projects/.../memory/` |
 
 ## 6. 로그 (최신이 위)
 | 날짜 | 내용 |
 | --- | --- |
+| 2026-11-08 | `openapi-draft.yaml` v0.1 작성(6경로·12스키마). 검증은 YAML 파싱·$ref 연결 확인만, OpenAPI 린터는 미실행. Q-11→DEV-13. 디자인 v0.3 반영은 아직 |
 | 2026-11-04 | 세션 종료 전 인수인계 정리: 이 파일을 전면 재작성(0. 요약, 함정, Git/PR 현황, 다음 할 일). PR #13 열림 확인 |
 | 2026-10-31 | PR #12 머지 확인·main 최신화. Q-7 보류 기록. `ARCHITECTURE.md` 초안 작성 → PR #13 |
 | 2026-10-30 | Q-4~6 확정(DEV-10~12). Q-7 분석 도구 비교 분석 작성. develop 브랜치 rebase → PR #12 |

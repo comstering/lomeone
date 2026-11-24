@@ -1,0 +1,430 @@
+openapi: 3.1.0
+info:
+  title: Lomeone Meet API (draft)
+  version: 0.1.0-draft
+  description: |
+    로미원 1단계 "약속" 백엔드 계약 초안. 프론트가 먼저 작성해 백엔드(사용자 구현)에 전달한다 (DEV-5).
+    **🟡 표시는 Q-9/Q-10 권장안 — 사용자 확정 전.**
+
+    - 인증 없음. 권한은 두 비밀값으로 판별한다. 서버는 해시만 저장한다 (PRD §9.2).
+      - 총무 키: 헤더 `X-Admin-Key` (22자 base62, 생성 응답에서 1회만 노출)
+      - 응답자 토큰: 헤더 `X-Responder-Token` (🟡 클라이언트가 생성한 22자 base62. 서버는 해시 저장)
+    - 슬롯 격자 인덱스(🟡): `cell = dateIndex * slotsPerDay + slotIndex`.
+      - `datetime`: slotsPerDay = (timeEnd - timeStart) / slotMinutes, 종일이면 1
+      - `date_only`: slotsPerDay = 1
+      - `weekday`(요일 모드): dateIndex = `weekdays[]` 배열 순번
+    - 추천 계산은 클라이언트 몫이다 (DEV-8). 서버는 원본만 저장·제공한다.
+servers:
+  - url: https://api.example.invalid/v1   # 백엔드 확정 시 교체. 프론트는 NEXT_PUBLIC_API_BASE로 주입 (DEV-6)
+tags:
+  - name: meets
+  - name: responses
+  - name: public
+
+paths:
+  /meets:
+    post:
+      tags: [meets]
+      operationId: createMeet
+      summary: 모임 생성 (낙관적 아님 — 서버가 ID 발급)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateMeetRequest' }
+      responses:
+        '201':
+          description: 생성됨. adminKey는 이 응답에서만 받을 수 있다.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateMeetResponse' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /meets/{meetId}:
+    parameters:
+      - $ref: '#/components/parameters/MeetId'
+    get:
+      tags: [meets]
+      operationId: getMeet
+      summary: 모임 조회 (설정 + 확정 상태). 응답 목록은 별도.
+      description: |
+        ETag 지원. 폴링은 `If-None-Match`로 304를 받는다 (DEV-3).
+        `X-Admin-Key`가 유효하면 `viewer: admin`, 아니면 `participant`로 같은 본문을 준다 (총무 전용 필드 없음).
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - { $ref: '#/components/parameters/AdminKeyOptional' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Meet' }
+        '304': { description: 변경 없음 }
+        '410': { $ref: '#/components/responses/Gone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [meets]
+      operationId: deleteMeet
+      summary: 모임 즉시 삭제 (총무)
+      security: [{ adminKey: [] }]
+      responses:
+        '204': { description: 삭제됨 (이후 조회는 410 deleted) }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '410': { $ref: '#/components/responses/Gone' }
+
+  /meets/{meetId}/confirmation:
+    parameters:
+      - $ref: '#/components/parameters/MeetId'
+    put:
+      tags: [meets]
+      operationId: confirmMeet
+      summary: 확정 / 확정 시간 바꾸기 (멱등, 총무)
+      description: 같은 슬롯으로 다시 PUT해도 성공(멱등). "지금 확정된 시간" 거절은 프론트가 한다.
+      security: [{ adminKey: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Confirmation' }
+      responses:
+        '200':
+          description: 확정됨
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Meet' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/Validation' }
+    delete:
+      tags: [meets]
+      operationId: cancelConfirmation
+      summary: 확정 취소 (응답 받는 중으로 복귀, 총무)
+      security: [{ adminKey: [] }]
+      responses:
+        '200':
+          description: 취소됨
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Meet' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '410': { $ref: '#/components/responses/Gone' }
+
+  /meets/{meetId}/responses:
+    parameters:
+      - $ref: '#/components/parameters/MeetId'
+    get:
+      tags: [responses]
+      operationId: listResponses
+      summary: 응답 전체 목록 (공개 — 이름 공개 PRD R-04-7)
+      description: ETag/If-None-Match 필수 지원 (폴링 5~10초, 304로 비용 절감).
+      parameters:
+        - $ref: '#/components/parameters/IfNoneMatch'
+      responses:
+        '200':
+          description: OK
+          headers:
+            ETag: { schema: { type: string } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResponseList' }
+        '304': { description: 변경 없음 }
+        '410': { $ref: '#/components/responses/Gone' }
+
+  /meets/{meetId}/responses/{responderId}:
+    parameters:
+      - $ref: '#/components/parameters/MeetId'
+      - name: responderId
+        in: path
+        required: true
+        description: 🟡 클라이언트가 생성한 UUID. 새 응답이면 생성, 있으면 응답자 토큰 일치 시에만 교체.
+        schema: { type: string, format: uuid }
+    put:
+      tags: [responses]
+      operationId: putResponse
+      summary: 응답 제출·수정 (멱등, 슬롯 전체 교체)
+      description: |
+        재시도 안전. 최초 PUT은 이름을 점유한다. 같은 모임에 같은 이름의 다른 responderId가 있으면 409 `name_taken`.
+        확정된 모임이면 423 `meet_confirmed`. 마감 후(P1)는 423 `meet_closed`.
+      security: [{ responderToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PutResponseRequest' }
+      responses:
+        '200':
+          description: 저장됨 (수정)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Response' }
+        '201':
+          description: 저장됨 (신규)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Response' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/NameTaken' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '422': { $ref: '#/components/responses/Validation' }
+        '423': { $ref: '#/components/responses/Locked' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+    delete:
+      tags: [responses]
+      operationId: deleteResponse
+      summary: 응답 삭제 (총무 키 또는 본인 토큰)
+      security: [{ adminKey: [] }, { responderToken: [] }]
+      responses:
+        '204': { description: 삭제됨 (이미 없어도 204 — 멱등) }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '410': { $ref: '#/components/responses/Gone' }
+
+  /public/meets/{meetId}/summary:
+    parameters:
+      - $ref: '#/components/parameters/MeetId'
+    get:
+      tags: [public]
+      operationId: getMeetSummary
+      summary: OG·메타용 공개 요약 (Next 서버가 호출, DEV-10)
+      description: 제목·응답 수·상태·확정 슬롯만. 응답자 이름·슬롯은 포함하지 않는다. 존재하지 않는 ID와 만료는 구분해 준다.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MeetSummary' }
+        '410': { $ref: '#/components/responses/Gone' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    adminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
+    responderToken:
+      type: apiKey
+      in: header
+      name: X-Responder-Token
+
+  parameters:
+    MeetId:
+      name: meetId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[0-9A-Za-z]{10}$' }
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      schema: { type: string }
+    AdminKeyOptional:
+      name: X-Admin-Key
+      in: header
+      required: false
+      schema: { type: string, pattern: '^[0-9A-Za-z]{22}$' }
+
+  responses:
+    Validation:
+      description: 입력 오류 (code=validation_failed)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: 키/토큰 없음·불일치 (code=forbidden)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: 존재하지 않는 ID (code=not_found)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Gone:
+      description: 만료 또는 삭제 (code=expired | deleted). 프론트는 /gone 표시
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NameTaken:
+      description: 같은 이름이 이미 있음 (code=name_taken). 프론트는 롤백 + 안내
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Locked:
+      description: 확정됨/마감됨 (code=meet_confirmed | meet_closed)
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    RateLimited:
+      description: 요청 과다 (code=rate_limited). Retry-After 헤더
+      headers:
+        Retry-After: { schema: { type: integer } }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    Problem:
+      description: 🟡 RFC 9457 problem+json. 프론트는 `code`로 분기한다.
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, description: 'about:blank 허용' }
+        title: { type: string }
+        status: { type: integer }
+        code:
+          type: string
+          enum: [validation_failed, forbidden, not_found, expired, deleted, name_taken, meet_confirmed, meet_closed, rate_limited]
+        detail: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+    Mode:
+      type: string
+      enum: [datetime, date_only, weekday]
+      description: 날짜+시간 / 날짜만 / 요일(매주 반복). PRD의 `date_only` 외에 요일 모드를 mode로 승격(🟡).
+
+    Weekday:
+      type: string
+      enum: [mon, tue, wed, thu, fri, sat, sun]
+
+    CreateMeetRequest:
+      type: object
+      required: [mode, timezone]
+      properties:
+        title: { type: string, maxLength: 40, default: 우리 모임 }
+        mode: { $ref: '#/components/schemas/Mode' }
+        dates:
+          type: array
+          description: mode=datetime|date_only. 1~31개, 오름차순.
+          minItems: 1
+          maxItems: 31
+          items: { type: string, format: date }
+        weekdays:
+          type: array
+          description: mode=weekday.
+          minItems: 1
+          maxItems: 7
+          uniqueItems: true
+          items: { $ref: '#/components/schemas/Weekday' }
+        timeStart: { type: string, pattern: '^([01]\d|2[0-3]):(00|30)$', default: '09:00' }
+        timeEnd: { type: string, pattern: '^(([01]\d|2[0-3]):(00|30)|24:00)$', default: '22:00', description: 종료 > 시작. mode=datetime|weekday에서만. }
+        timezone: { type: string, example: Asia/Seoul }
+        deadline: { type: string, format: date-time, description: '(P1) 응답 마감' }
+        source: { type: string, enum: [direct, respondent, search], description: 'AC-06-2 계측용' }
+
+    CreateMeetResponse:
+      type: object
+      required: [meet, adminKey]
+      properties:
+        meet: { $ref: '#/components/schemas/Meet' }
+        adminKey: { type: string, pattern: '^[0-9A-Za-z]{22}$', description: 이 응답에서만 노출 }
+
+    Meet:
+      type: object
+      required: [id, title, mode, timezone, slotMinutes, status, createdAt, expiresAt, viewer]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        mode: { $ref: '#/components/schemas/Mode' }
+        dates: { type: array, items: { type: string, format: date } }
+        weekdays: { type: array, items: { $ref: '#/components/schemas/Weekday' } }
+        timeStart: { type: string }
+        timeEnd: { type: string }
+        slotMinutes: { type: integer, const: 30 }
+        timezone: { type: string }
+        deadline: { type: [string, 'null'], format: date-time }
+        status: { type: string, enum: [open, confirmed, closed], description: closed는 P1 마감 }
+        confirmation:
+          oneOf:
+            - $ref: '#/components/schemas/Confirmation'
+            - type: 'null'
+        viewer: { type: string, enum: [participant, admin] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+
+    Confirmation:
+      type: object
+      required: [cells]
+      properties:
+        cells:
+          type: array
+          description: 확정 슬롯의 격자 인덱스(연속 구간 가능). date_only는 날짜 인덱스 1개.
+          minItems: 1
+          items: { type: integer, minimum: 0 }
+        startTime:
+          type: [string, 'null']
+          description: date_only 확정 시 선택 입력(HH:mm). null이면 하루 종일.
+        endTime: { type: [string, 'null'] }
+        previous:
+          type: [object, 'null']
+          description: '서버가 채움(읽기 전용). "시간이 바뀌었어요 (이전: …)" 표시용.'
+          properties:
+            cells: { type: array, items: { type: integer } }
+        confirmedAt: { type: string, format: date-time, readOnly: true }
+
+    Availability:
+      type: object
+      description: 🟡 격자 인덱스의 정렬된 고유 배열. 비어 있어도 제출 허용(R-03 "가능한 시간이 없어요").
+      properties:
+        yes:
+          type: array
+          items: { type: integer, minimum: 0 }
+        maybe:
+          type: array
+          description: date_only 모드에서만 사용(애매).
+          items: { type: integer, minimum: 0 }
+      required: [yes]
+
+    PutResponseRequest:
+      type: object
+      required: [name, availability]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 20 }
+        availability: { $ref: '#/components/schemas/Availability' }
+
+    Response:
+      type: object
+      required: [id, name, availability, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        availability: { $ref: '#/components/schemas/Availability' }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    ResponseList:
+      type: object
+      required: [responses, updatedAt]
+      properties:
+        responses:
+          type: array
+          items: { $ref: '#/components/schemas/Response' }
+        updatedAt: { type: string, format: date-time }
+
+    MeetSummary:
+      type: object
+      required: [id, title, status, responseCount]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        mode: { $ref: '#/components/schemas/Mode' }
+        status: { type: string, enum: [open, confirmed, closed] }
+        responseCount: { type: integer, minimum: 0 }
+        confirmation:
+          oneOf:
+            - $ref: '#/components/schemas/Confirmation'
+            - type: 'null'
+        dates: { type: array, items: { type: string, format: date } }
+        weekdays: { type: array, items: { $ref: '#/components/schemas/Weekday' } }
+        timeStart: { type: string }
+        timeEnd: { type: string }
+        timezone: { type: string }
+        version: { type: string, description: 'OG URL ?v= 용 (응답 수 + 확정 리비전)' }
